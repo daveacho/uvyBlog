@@ -32,7 +32,7 @@ def register_user(request):
 
 
 class BlogPagination(PageNumberPagination):
-    page_size = 4 # Number of results per page
+    page_size = 6 # Number of results per page
 
 
 @api_view(['GET'])

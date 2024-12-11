@@ -2,8 +2,9 @@ import { Link, useParams } from "react-router-dom";
 import { FaFacebook, FaGithub, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { ACCESS_TOKEN } from "../constant";
 import { useEffect, useState } from "react";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/"
+// const API_URL = "http://127.0.0.1:8000/"
 const token = localStorage.getItem(ACCESS_TOKEN)
 
 // const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
@@ -37,7 +38,7 @@ export default function UserProfile () {
       userprofile()
     }, [slug])
 
-    const userImage = userBio.image ? `${API_URL}${userBio.image}` : `${API_URL}/media/default_images/img2.png`;
+    const userImage = userBio.image ? `${API_URL}${userBio.image}` : `${API_URL}media/default_images/img2.png`;
     // src={userBio.image ? `${API_URL}${userBio.image}` : "img1.png"}
     
     return <div className="min-h-screen max-w-lg mx-auto mt-10">

@@ -10,7 +10,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdateProfile from './components/UpdateProfile';
-import UserProfile from './pages/profile';
+import UserProfile from './pages/Profile';
 import CreateBlogs from './components/CreateBlog';
 import BlogDetail from './components/BlogDetails';
 import UpdateBlog from './components/EditNote';

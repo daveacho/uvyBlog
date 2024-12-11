@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constant";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/token/";
+// const API_URL = "http://127.0.0.1:8000/token/";
 
 async function login(userLogin) {
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(`${API_URL}token/`, {
       method: "POST",
       body: JSON.stringify(userLogin),
       headers: {

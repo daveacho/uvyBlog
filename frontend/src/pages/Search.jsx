@@ -207,9 +207,10 @@
 
 import { useEffect, useState } from "react";
 import NoteContainer from "../components/NoteContainer";
-import Filter from "../components/filter";
+import Filter from "../components/Filter";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000";
+// const API_URL = "http://127.0.0.1:8000";
 
 export default function Search({ searchNotes }) {
     const [filterNotes, setFilterNotes] = useState("");
@@ -223,8 +224,8 @@ export default function Search({ searchNotes }) {
         setFilterNotes(val);
     }
 
-    // Function to fetch notes
-    async function fetchNotes(url) {
+    // Function to fetch blogs
+    async function fetchBlogs(url) {
         setLoading(true);
         try {
             const response = await fetch(url);
@@ -244,9 +245,9 @@ export default function Search({ searchNotes }) {
     // Fetch notes on searchNotes change
     useEffect(() => {
         if (searchNotes) {
-            fetchNotes(`${API_URL}/searchblog/?search=${searchNotes}`);
+            fetchBlogs(`${API_URL}searchblog/?search=${searchNotes}`);
         } else {
-            fetchNotes(`${API_URL}/blog_list/`);
+            fetchBlogs(`${API_URL}blog_list/`);
         }
     }, [searchNotes]);
 
@@ -283,7 +284,7 @@ export default function Search({ searchNotes }) {
             <div className="flex justify-between mb-14 p-7">
                 <button
                     disabled={!prevPage}
-                    onClick={() => fetchNotes(prevPage)}
+                    onClick={() => fetchBlogs(prevPage)}
                     className={`px-4 py-2 bg-gray-300 rounded ${
                         !prevPage && "opacity-50 cursor-not-allowed"
                     }`}
@@ -293,7 +294,7 @@ export default function Search({ searchNotes }) {
 
                 <button
                     disabled={!nextPage}
-                    onClick={() => fetchNotes(nextPage)}
+                    onClick={() => fetchBlogs(nextPage)}
                     className={`px-4 py-2 bg-gray-300 rounded ${
                         !nextPage && "opacity-50 cursor-not-allowed"
                     }`}

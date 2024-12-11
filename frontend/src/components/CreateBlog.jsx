@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN } from "../constant";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/create_blog/";
+// const API_URL = "http://127.0.0.1:8000/create_blog/";
 const token = localStorage.getItem(ACCESS_TOKEN);
 
 export default function CreateBlogs() {
@@ -50,7 +51,7 @@ export default function CreateBlogs() {
     data.append("featured_image", blogImage);
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_URL}create_blog/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`, // Include token for authentication

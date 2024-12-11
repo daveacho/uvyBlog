@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { ACCESS_TOKEN } from "../constant";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/";
+// const API_URL = "http://127.0.0.1:8000/";
 const token = localStorage.getItem(ACCESS_TOKEN);
 
 export default function UpdateBlog() {

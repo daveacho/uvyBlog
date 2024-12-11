@@ -1,25 +1,26 @@
 import { useEffect, useState } from "react";
 import Note from "./Note";
+import API_URL from "../config";
 
 
-const API_URL = "http://127.0.0.1:8000/blog_list/"; 
+// const API_URL = "http://127.0.0.1:8000/";
 
 export default function PublishedNotes({ limit = 4 }) {
     const [notes, setNotes] = useState([]);
 
-    // Fetch notes on component mount
+    // Fetch blogs on component mount
     useEffect(() => {
-        const getNotes = async () => {
+        const getBlogs = async () => {
             try {
-                const response = await fetch(`${API_URL}`);
+                const response = await fetch(`${API_URL}blog_list/`);
                 const data = await response.json();
                 console.log("API response:", data);
                 setNotes(data.results);
             } catch (error) {
-                console.error("Error fetching notes:", error);
+                console.error("Error fetching blog:", error);
             }
         };
-        getNotes();
+        getBlogs();
     }, []);
 
     // Limit the notes if a limit is set
@@ -31,7 +32,7 @@ export default function PublishedNotes({ limit = 4 }) {
             {displayedNotes.length > 0 ? (
                 displayedNotes.map((note, i) => <Note note={note} key={i} />) // Iterate over the `notes` state
             ) : (
-                <p>No notes available.</p>
+                <p>No blogs available.</p>
             )}
         </div>
     );

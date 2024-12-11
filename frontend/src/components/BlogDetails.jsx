@@ -4,8 +4,9 @@ import {  Description,Dialog, DialogPanel, DialogTitle } from "@headlessui/react
 import { ACCESS_TOKEN } from "../constant";
 import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/";
+// const API_URL = "http://127.0.0.1:8000/";
 
 export default function BlogDetail() {
     const { slug } = useParams();

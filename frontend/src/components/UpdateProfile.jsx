@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ACCESS_TOKEN } from "../constant";
+import API_URL from "../config";
 
-const API_URL = "http://127.0.0.1:8000/";
+// const API_URL = "http://127.0.0.1:8000/";
 const token = localStorage.getItem(ACCESS_TOKEN);
 
 

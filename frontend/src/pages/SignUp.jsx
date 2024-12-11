@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API_URL from "../config";
 
-const API_URL = 'http://127.0.0.1:8000/signup/'
+// const API_URL = 'http://127.0.0.1:8000/signup/'
 
 async function signUp(newSignUp) {
    try {
-     const res = await fetch(`${API_URL}`, {
+     const res = await fetch(`${API_URL}signup/`, {
        method: "POST",
        body: JSON.stringify(newSignUp),
        headers: {
