@@ -39,7 +39,7 @@ async function fetchUserProfile() {
 
         const data = await res.json();
         console.log("updated data:", data)
-        
+
         setEmail(data.email);
         setUsername(data.username);
         setFirstname(data.first_name);
@@ -54,7 +54,7 @@ async function fetchUserProfile() {
         // if (data.image) {
         //                         setImageFileURL(`${API_URL}${data.image}`);
         //                 }
-        
+
     } catch (error) {
         console.error("Error fetching profile:", error);
     }
@@ -76,7 +76,7 @@ async function handleSubmit(e) {
     e.preventDefault();
 
     const formDataObj = new FormData();
-    
+
     formDataObj.append("email", email);
     formDataObj.append("username", username);
     formDataObj.append("first_name", firstname);
@@ -178,7 +178,7 @@ return (
         />
         <button
             type="submit"
-            className="uppercase bg-teal-500 text-white 
+            className="uppercase bg-teal-500 text-white
             py-2 px-4 rounded-lg hover:opacity-95 mb-10"
         >
             Update

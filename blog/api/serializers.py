@@ -46,6 +46,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         return user
 
+# class UserInfoSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomUser
+#         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'image',
+#                   'bio', 'about', 'facebook', 'twitter', 'linkedin']
+#         extra_kwargs = {
+#             'image': {'required': False, 'allow_null': True},  # Make the image field optional
+#         }
+
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -54,6 +63,21 @@ class UserInfoSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'image': {'required': False, 'allow_null': True},  # Make the image field optional
         }
+#
+#     def validate(self, attrs):
+#         # Get the current user instance
+#         user = self.instance
+#
+#         # Validate email
+#         if 'email' in attrs and CustomUser.objects.filter(email=attrs['email']).exclude(id=user.id).exists():
+#             raise serializers.ValidationError({'email': 'A user with this email already exists.'})
+#
+#         # Validate username
+#         if 'username' in attrs and CustomUser.objects.filter(username=attrs['username']).exclude(id=user.id).exists():
+#             raise serializers.ValidationError({'username': 'A user with this username already exists.'})
+#
+#         return attrs
+
 
 class BlogSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)  # Make 'author' read-only

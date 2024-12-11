@@ -7,7 +7,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('logout/', views.logout_view, name='logout_view'),
     path('signup/', views.register_user, name='user-register'),
     path("blog_list/", views.blog_list, name="blog_list"),
     path('searchblog/', views.search_blogs, name='search'),

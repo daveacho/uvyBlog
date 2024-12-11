@@ -10,20 +10,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import parser_classes
-from rest_framework_simplejwt.tokens import RefreshToken
-
-@api_view(['POST'])
-def logout_view(request):
-    refresh_token = request.data.get("refresh_token")
-    print("Request Data:", request.data)
-
-    if refresh_token:
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()  # Blacklist the token
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
-    return Response({"message": "Logged out successfully."}, status=200)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -150,9 +136,11 @@ def get_username(request):
 def update_profile(request):
     user = request.user
     serializer = UserInfoSerializer(user, data=request.data, partial=True)
+
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
+
     else:
         print(serializer.errors)  # Debugging
         print("Request data:", request.data)  # Debugging request data
