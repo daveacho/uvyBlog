@@ -62,6 +62,7 @@ export default function CreateBlogs() {
       if (!res.ok) throw new Error("Failed to create blog");
       const result = await res.json();
       console.log("Blog created successfully:", result);
+      console.log("Current Access Token:", token);
 
       navigate("/search"); // Navigate back after success to home page
     } catch (error) {

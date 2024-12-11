@@ -232,7 +232,17 @@ export default function Search({ searchNotes }) {
             if (!response.ok) throw new Error("Failed to fetch blogs");
             const data = await response.json();
             console.log("API Response:", data);
-            setNotes(data.results);
+//             setNotes(data.results);
+
+            // Handle both array and object response formats
+        if (Array.isArray(data)) {
+            setNotes(data); // Direct array response
+        } else if (Array.isArray(data.results)) {
+            setNotes(data.results); // Object with results array
+        } else {
+            console.warn("API returned invalid data format:", data);
+            setNotes([]); // Fallback to empty array
+        }
             setNextPage(data.next); // Set next page URL
             setPrevPage(data.previous); // Set previous page URL
         } catch (error) {
@@ -250,6 +260,8 @@ export default function Search({ searchNotes }) {
             fetchBlogs(`${API_URL}/blog_list/`);
         }
     }, [searchNotes]);
+
+    console.log("notes: ", notes)
 
     // Filter notes by category
     const filteredNotes =

@@ -55,14 +55,22 @@ class UserInfoSerializer(serializers.ModelSerializer):
             'image': {'required': False, 'allow_null': True},  # Make the image field optional
         }
 
-
 class BlogSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()  # This uses the __str__ method of the User model
+    author = serializers.StringRelatedField(read_only=True)  # Make 'author' read-only
+
     class Meta:
         model = Note
         fields = '__all__'
+        read_only_fields = ['author']
 
 
+# class BlogSerializer(serializers.ModelSerializer):
+#     author = serializers.StringRelatedField()
+#     class Meta:
+#         model = Note
+#         fields = '__all__'
+
+# This uses the __str__ method of the User model
 
 # class NoteSerializer(serializers.ModelSerializer):
 #     author = serializers.SlugRelatedField(

@@ -79,8 +79,8 @@ async function handleSubmit(e) {
     
     formDataObj.append("email", email);
     formDataObj.append("username", username);
-    formDataObj.append("firstname", firstname);
-    formDataObj.append("lastname", lastname);
+    formDataObj.append("first_name", firstname);
+    formDataObj.append("last_name", lastname);
     formDataObj.append("bio", bio);
     formDataObj.append("about", about);
 

@@ -10,6 +10,21 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import parser_classes
+from rest_framework_simplejwt.tokens import RefreshToken
+
+@api_view(['POST'])
+def logout_view(request):
+    refresh_token = request.data.get("refresh_token")
+    print("Request Data:", request.data)
+
+    if refresh_token:
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Blacklist the token
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+    return Response({"message": "Logged out successfully."}, status=200)
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -32,7 +47,7 @@ def register_user(request):
 
 
 class BlogPagination(PageNumberPagination):
-    page_size = 6 # Number of results per page
+    page_size = 8 # Number of results per page
 
 
 @api_view(['GET'])
@@ -67,6 +82,9 @@ def create_blog(request):
     user = request.user
     # Debugging: Print the authenticated user
     print(f"Authenticated user: {user}")
+    # Debugging: Print the token and user
+    print(f"Authorization Header: {request.headers.get('Authorization')}")
+    print(f"Authenticated user: {request.user}")
 
     serializer = BlogSerializer(data=request.data)
     if serializer.is_valid():
@@ -137,6 +155,7 @@ def update_profile(request):
         return Response(serializer.data)
     else:
         print(serializer.errors)  # Debugging
+        print("Request data:", request.data)  # Debugging request data
         return Response(serializer.errors, status=400)
 
 
