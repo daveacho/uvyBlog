@@ -26,19 +26,22 @@ class CustomUser(AbstractUser):
         super(CustomUser, self).save(*args, **kwargs)
 
 class Note(models.Model):
-    CATEGORY = (("BUSINESS","Business"),
-                ("PERSONAL", "Personal"),
-                ("IMPORTANT", "Important"))
+    CATEGORY = (("PROGRAMMING","Programming"),
+                ("CLOUD", "Cloud"),
+                ("DEVOPS", "Devops"))
     author = models.ForeignKey(
         "CustomUser", on_delete=models.CASCADE, null=True, blank=True
     )
     title = models.CharField(max_length=100)
     body = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
-    category = models.CharField(max_length=15, choices=CATEGORY, default="PERSONAL")
+    category = models.CharField(max_length=15, choices=CATEGORY, default="PROGRAMMING")
     featured_image = models.FileField(upload_to='blog_img', default='default_images/img2.png', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']  # Most recent notes first
 
 
     def __str__(self):

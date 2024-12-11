@@ -245,20 +245,20 @@ export default function Search({ searchNotes }) {
     // Fetch notes on searchNotes change
     useEffect(() => {
         if (searchNotes) {
-            fetchBlogs(`${API_URL}searchblog/?search=${searchNotes}`);
+            fetchBlogs(`${API_URL}/searchblog/?search=${searchNotes}`);
         } else {
-            fetchBlogs(`${API_URL}blog_list/`);
+            fetchBlogs(`${API_URL}/blog_list/`);
         }
     }, [searchNotes]);
 
     // Filter notes by category
     const filteredNotes =
-        filterNotes === "BUSINESS"
-            ? notes.filter((note) => note.category === "BUSINESS")
-            : filterNotes === "PERSONAL"
-            ? notes.filter((note) => note.category === "PERSONAL")
-            : filterNotes === "IMPORTANT"
-            ? notes.filter((note) => note.category === "IMPORTANT")
+        filterNotes === "PROGRAMMING"
+            ? notes.filter((note) => note.category === "PROGRAMMING")
+            : filterNotes === "CLOUD"
+            ? notes.filter((note) => note.category === "CLOUD")
+            : filterNotes === "DEVOPS"
+            ? notes.filter((note) => note.category === "DEVOPS")
             : notes;
 
     return (

@@ -51,7 +51,7 @@ export default function CreateBlogs() {
     data.append("featured_image", blogImage);
 
     try {
-      const res = await fetch(`${API_URL}create_blog/`, {
+      const res = await fetch(`${API_URL}/create_blog/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`, // Include token for authentication
@@ -90,9 +90,9 @@ export default function CreateBlogs() {
             className="rounded-lg p-3 focus:outline-none flex-1 focus:ring focus:ring-teal-500"
           >
             <option value="">Select a category</option>
-            <option value="BUSINESS">Business</option>
-            <option value="PERSONAL">Personal</option>
-            <option value="IMPORTANT">Important</option>
+            <option value="PROGRAMMING">Programming</option>
+            <option value="CLOUD">Cloud</option>
+            <option value="DEVOPS">Devops</option>
           </select>
         </div>
         <div className="flex items-center justify-between border border-teal-500 border-dotted p-3 border-4">

@@ -21,7 +21,7 @@ export default function UpdateBlog() {
   useEffect(() => {
     async function fetchBlog() {
       try {
-        const res = await fetch(`${API_URL}blog_detail/${slug}`, {
+        const res = await fetch(`${API_URL}/blog_detail/${slug}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch blog");
@@ -60,7 +60,7 @@ export default function UpdateBlog() {
     }
 
     try {
-      const res = await fetch(`${API_URL}update_blog/${slug}/`, {
+      const res = await fetch(`${API_URL}/update_blog/${slug}/`, {
         method: "PUT",
         body: formData,
         headers: {
@@ -96,9 +96,9 @@ export default function UpdateBlog() {
             onChange={(e) => setCategory(e.target.value)}
             className="rounded-md p-3 flex-1 focus:ring focus:ring-teal-500"
           >
-            <option value="BUSINESS">Business</option>
-            <option value="PERSONAL">Personal</option>
-            <option value="IMPORTANT">Important</option>
+            <option value="PROGRAMMING">Programming</option>
+            <option value="CLOUD">Cloud</option>
+            <option value="DEVOPS">Devops</option>
           </select>
         </div>
         <div className="border-2 border-4 border-dotted border-teal-500

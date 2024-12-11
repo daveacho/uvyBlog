@@ -32,7 +32,7 @@ export default function BlogDetail() {
 
         const getSingleNote = async () => {
             try {
-                const res = await fetch(`${API_URL}blog_detail/${slug}/`);
+                const res = await fetch(`${API_URL}/blog_detail/${slug}/`);
                 if (!res.ok) throw new Error("Failed to fetch the note.");
                 const data = await res.json();
                 console.log("single note",data)
@@ -46,7 +46,7 @@ export default function BlogDetail() {
 
     async function deleteNote() {
         try {
-            const res = await fetch(`${API_URL}delete_blog/${slug}/`, {
+            const res = await fetch(`${API_URL}/delete_blog/${slug}/`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

@@ -16,7 +16,7 @@ export default function UserProfile () {
 
     async function userprofile() {
       try {
-        const res = await fetch(`${API_URL}user_info/${slug}`, {
+        const res = await fetch(`${API_URL}/user_info/${slug}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -7,7 +7,7 @@ import API_URL from "../config";
 
 async function login(userLogin) {
   try {
-    const res = await fetch(`${API_URL}token/`, {
+    const res = await fetch(`${API_URL}/token/`, {
       method: "POST",
       body: JSON.stringify(userLogin),
       headers: {

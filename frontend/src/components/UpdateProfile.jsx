@@ -29,7 +29,7 @@ async function fetchUserProfile() {
 
 
     try {
-        const res = await fetch(`${API_URL}user_info/${slug}`, {
+        const res = await fetch(`${API_URL}/user_info/${slug}`, {
             method: "GET",
             headers: {
                 "Authorization" : `Bearer ${token}`
@@ -47,7 +47,7 @@ async function fetchUserProfile() {
         setBio(data.bio);
         setAbout(data.about);
 
-        const userImage = data.image ? `${API_URL}${data.image}` : `${API_URL}/media/default_images/img2.png`;
+        const userImage = data.image ? `${API_URL}${data.image}` : `${API_URL}media/default_images/img2.png`;
 
         setImageFileURL(userImage);
 
@@ -89,7 +89,7 @@ async function handleSubmit(e) {
       }
 
     try {
-        const res = await fetch(`${API_URL}update_profile/`, {
+        const res = await fetch(`${API_URL}/update_profile/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`, // Only include Authorization

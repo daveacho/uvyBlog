@@ -6,7 +6,7 @@ import API_URL from "../config";
 
 async function signUp(newSignUp) {
    try {
-     const res = await fetch(`${API_URL}signup/`, {
+     const res = await fetch(`${API_URL}/signup/`, {
        method: "POST",
        body: JSON.stringify(newSignUp),
        headers: {

@@ -12,7 +12,7 @@ export default function PublishedNotes({ limit = 4 }) {
     useEffect(() => {
         const getBlogs = async () => {
             try {
-                const response = await fetch(`${API_URL}blog_list/`);
+                const response = await fetch(`${API_URL}/blog_list/`);
                 const data = await response.json();
                 console.log("API response:", data);
                 setNotes(data.results);
