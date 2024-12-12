@@ -12,7 +12,11 @@ body {
   }
 
 .blog_content p {
-    font-size: x-large;
     font-family: sans-serif;
+}
+
+.blog_content h1 {
     font-weight: 700;
+    font-size: x-large;
+    margin-bottom: 10px;
 }
