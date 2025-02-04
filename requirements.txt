@@ -4,3 +4,8 @@ django-cors-headers
 djangorestframework-simplejwt
 djoser
 drf-yasg
+django-prometheus
+psycopg2-binary
+django-redis
+boto3
+django-storages
