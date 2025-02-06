@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: rgb(241, 245, 241);
+}
+
+.homepage {
+    @apply bg-cover bg-center; 
+    background-image: url('img1.png');
+  }
+
+.blog_content p {
+    font-family: sans-serif;
+}
+
+.blog_content h1 {
+    font-weight: 700;
+    font-size: x-large;
+    margin-bottom: 10px;
+}
