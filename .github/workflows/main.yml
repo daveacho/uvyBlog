@@ -45,6 +45,9 @@ jobs:
             if ! command -v python3 &> /dev/null; then
               sudo apt install -y python3 python3-pip
             fi
+            
+            # Update the .env file for React
+            echo "VITE_API_URL=http://18.171.206.112:8000" > frontend/.env
 
             # Start React-vite frontend
             cd frontend
