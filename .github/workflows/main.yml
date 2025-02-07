@@ -49,7 +49,7 @@ jobs:
             # Update the .env file for React
             echo "VITE_API_URL=http://18.171.206.112:8000" > frontend/.env
 
-            # Start React-vite frontend
+            # Start React frontend
             cd frontend
             npm install
             nohup npm run dev -- --host 0.0.0.0 > ~/frontend.log 2>&1 &
