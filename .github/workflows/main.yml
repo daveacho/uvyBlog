@@ -54,5 +54,4 @@ jobs:
             # Start Django backend
             cd ../blog
             pip install -r requirements.txt
-            cd blog
             nohup python3 manage.py runserver 0.0.0.0:8000 > ~/backend.log 2>&1 &
