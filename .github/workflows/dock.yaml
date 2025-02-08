@@ -25,7 +25,7 @@ jobs:
 
       - name: Build and Push React Image
         run: |
-          cd uvyBlog/frontend
+          cd frontend
           docker build -t davidachoja/node-app:react-vite-app .
           docker push davidachoja/node-app:react-vite-app
 
@@ -41,7 +41,7 @@ jobs:
 
       - name: Build and Push Django Image
         run: |
-          cd uvyBlog/blog
+          cd blog
           docker build -t davidachoja/django-blog:latest .
           docker push davidachoja/django-blog:latest
 
