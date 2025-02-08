@@ -14,7 +14,7 @@ RUN npm install
 EXPOSE 5173
 
 # Set environment variables
-ENV VITE_API_URL='http://18.130.79.190:8000'
+ENV VITE_API_URL='http://18.170.225.180:8000'
 
 # Start the React development server
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
