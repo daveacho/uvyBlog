@@ -1,0 +1,1325 @@
+[
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "admin",
+        "model": "logentry"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "auth",
+        "model": "permission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "auth",
+        "model": "group"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "contenttypes",
+        "model": "contenttype"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "sessions",
+        "model": "session"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "api",
+        "model": "customuser"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "api",
+        "model": "note"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "token_blacklist",
+        "model": "blacklistedtoken"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "fields": {
+        "app_label": "token_blacklist",
+        "model": "outstandingtoken"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "p94ur66lhf3u1woz5ylhgwd1du0us7lu",
+    "fields": {
+        "session_data": ".eJxVjMsOwiAQRf-FtSHAwBRcuvcbCMNDqgaS0q6M_65NutDtPefcF_NhW6vfRl78nNiZSXb63SjER247SPfQbp3H3tZlJr4r_KCDX3vKz8vh_h3UMOq3NlAsOIsGUrZGqeRKNAIoIpLWxWWMJJAgUBBSO4kwWSxSiwhGTVmy9wfN-TcY:1tH1jF:IjYOqo0M25gmt1HINxtm-nX14s6-gdCNE9VJrBZaRUQ",
+        "expire_date": "2024-12-13T14:12:17.421Z"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "y44ldwzcsa0suv5w7xdoiemxhk6182af",
+    "fields": {
+        "session_data": ".eJxVjMsOwiAQRf-FtSHAwBRcuvcbCMNDqgaS0q6M_65NutDtPefcF_NhW6vfRl78nNiZSXb63SjER247SPfQbp3H3tZlJr4r_KCDX3vKz8vh_h3UMOq3NlAsOIsGUrZGqeRKNAIoIpLWxWWMJJAgUBBSO4kwWSxSiwhGTVmy9wfN-TcY:1tFeNo:9TNkKRYvUj5ckYtqexI8Xr_o1omuEz9qqXacmtsUDz8",
+        "expire_date": "2024-12-09T19:04:28.996Z"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add log entry",
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
+        "codename": "add_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change log entry",
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
+        "codename": "change_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete log entry",
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
+        "codename": "delete_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view log entry",
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
+        "codename": "view_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add permission",
+        "content_type": [
+            "auth",
+            "permission"
+        ],
+        "codename": "add_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change permission",
+        "content_type": [
+            "auth",
+            "permission"
+        ],
+        "codename": "change_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete permission",
+        "content_type": [
+            "auth",
+            "permission"
+        ],
+        "codename": "delete_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view permission",
+        "content_type": [
+            "auth",
+            "permission"
+        ],
+        "codename": "view_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add group",
+        "content_type": [
+            "auth",
+            "group"
+        ],
+        "codename": "add_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change group",
+        "content_type": [
+            "auth",
+            "group"
+        ],
+        "codename": "change_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete group",
+        "content_type": [
+            "auth",
+            "group"
+        ],
+        "codename": "delete_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view group",
+        "content_type": [
+            "auth",
+            "group"
+        ],
+        "codename": "view_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add content type",
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
+        "codename": "add_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change content type",
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
+        "codename": "change_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete content type",
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
+        "codename": "delete_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view content type",
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
+        "codename": "view_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add session",
+        "content_type": [
+            "sessions",
+            "session"
+        ],
+        "codename": "add_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change session",
+        "content_type": [
+            "sessions",
+            "session"
+        ],
+        "codename": "change_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete session",
+        "content_type": [
+            "sessions",
+            "session"
+        ],
+        "codename": "delete_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view session",
+        "content_type": [
+            "sessions",
+            "session"
+        ],
+        "codename": "view_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add user",
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "codename": "add_customuser"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change user",
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "codename": "change_customuser"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete user",
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "codename": "delete_customuser"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view user",
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "codename": "view_customuser"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add note",
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "codename": "add_note"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change note",
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "codename": "change_note"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete note",
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "codename": "delete_note"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view note",
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "codename": "view_note"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add blacklisted token",
+        "content_type": [
+            "token_blacklist",
+            "blacklistedtoken"
+        ],
+        "codename": "add_blacklistedtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change blacklisted token",
+        "content_type": [
+            "token_blacklist",
+            "blacklistedtoken"
+        ],
+        "codename": "change_blacklistedtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete blacklisted token",
+        "content_type": [
+            "token_blacklist",
+            "blacklistedtoken"
+        ],
+        "codename": "delete_blacklistedtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view blacklisted token",
+        "content_type": [
+            "token_blacklist",
+            "blacklistedtoken"
+        ],
+        "codename": "view_blacklistedtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can add outstanding token",
+        "content_type": [
+            "token_blacklist",
+            "outstandingtoken"
+        ],
+        "codename": "add_outstandingtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can change outstanding token",
+        "content_type": [
+            "token_blacklist",
+            "outstandingtoken"
+        ],
+        "codename": "change_outstandingtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can delete outstanding token",
+        "content_type": [
+            "token_blacklist",
+            "outstandingtoken"
+        ],
+        "codename": "delete_outstandingtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "fields": {
+        "name": "Can view outstanding token",
+        "content_type": [
+            "token_blacklist",
+            "outstandingtoken"
+        ],
+        "codename": "view_outstandingtoken"
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$2A4cO5vDVM5KbJVC8W8y8a$6ihNTZNTFrlN1fgE3fx93YParfRylMXvVs1BE/xodZA=",
+        "last_login": "2024-11-29T14:12:17.418Z",
+        "is_superuser": true,
+        "username": "john",
+        "first_name": "john",
+        "last_name": "moseson",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-11-25T16:24:10Z",
+        "about": "I am python developer, who specializes in Django framework. reactjs is great, i am excited about this new stress i put on my self. the debugging part can be annoying. but i need to continue and see it till the end. God please help me i need your help  You can become a react expert by following these three steps.",
+        "bio": "Cloud Developers",
+        "email": "john@gmail.com",
+        "image": "user_folder/andrew-neel-cckf4TsHAuw-unsplash_dfnrxlB.jpg",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-11-25T16:24:11.165Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$65NecnOTVJ3mLaNMx46nPk$StA70B0xcSom8NQWGAg9Hvb4ntlHyxWPh7KTUKValHk=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "gab",
+        "first_name": "gabriel",
+        "last_name": "joshua",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-25T17:43:50Z",
+        "about": "devops engineer with three years of experience. working on monitoring.",
+        "bio": "devops engineers and CICD expert",
+        "email": "gab@gmail.com",
+        "image": "user_folder/img3_M42J2qg.png",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-11-25T17:43:51.272Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$38i7UWos5x30KlW5HLFL0m$tZ980bP0uupWGotOzVgqdxIGwLyATijTi2nmeYsTwwc=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "josh",
+        "first_name": "joshua",
+        "last_name": "isaac",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-28T18:01:10.206Z",
+        "about": "loves coding in python. also good with nodejs. and love dancing.",
+        "bio": "Python Developer",
+        "email": "josh@gmail.com",
+        "image": "user_folder/ian-schneider-TamMbr4okv4-unsplash.jpg",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-11-28T18:01:10.826Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$35NJGN9EQF7gi60CqcT6Wi$4TPWmOVF1xdlsNkRI1iFGAYdFtf3alYXF2fTVYd5t5Q=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "oko",
+        "first_name": "okoro",
+        "last_name": "kode",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-12-11T17:44:58.857Z",
+        "about": null,
+        "bio": null,
+        "email": "oko@gmail.com",
+        "image": "default_images/img2.png",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-12-11T17:44:59.387Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$YjZSzar84djUkoCltXieUL$mcxnDdjDcioD8UnHFCul6xJNiq0sLzPxZ75sf576cOk=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "uvy",
+        "first_name": "uvie",
+        "last_name": "babegirl",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-12-11T20:07:15.049Z",
+        "about": "Experienced in patient care. More experience on the way.",
+        "bio": "Senior nurse",
+        "email": "uvy@gmail.com",
+        "image": "default_images/img2.png",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-12-11T20:07:15.597Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.customuser",
+    "fields": {
+        "password": "pbkdf2_sha256$870000$c65r0kLETz8LxhkHw6YTSm$WRwcpRCFekuBUTKkpJ/+Z085By4FJcIC8TSjQAccrKA=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "alh",
+        "first_name": "alhaji",
+        "last_name": "sokoto",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-12-11T20:49:07.313Z",
+        "about": null,
+        "bio": null,
+        "email": "alh@gmail.com",
+        "image": "default_images/img2.png",
+        "facebook": null,
+        "twitter": null,
+        "linkedin": null,
+        "date": "2024-12-11T20:49:07.843Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "api.note",
+    "pk": 8,
+    "fields": {
+        "author": [
+            "john@gmail.com"
+        ],
+        "title": "Docker",
+        "body": "<p>Docker is a tool used for dockerizing applications.</p>",
+        "slug": "docker",
+        "category": "CLOUD",
+        "featured_image": "blog_img/new_img.jpg",
+        "created": "2024-12-04T19:23:35.307Z",
+        "updated": "2024-12-11T10:18:22.662Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 9,
+    "fields": {
+        "author": [
+            "josh@gmail.com"
+        ],
+        "title": "Github Action",
+        "body": "<p>Github action is a powerful CICD tool. Jenkins is also a CICD</p><p>tool.</p>",
+        "slug": "github-action",
+        "category": "CLOUD",
+        "featured_image": "blog_img/new_img1.jpg",
+        "created": "2024-12-04T19:49:25.164Z",
+        "updated": "2024-12-11T10:18:06.491Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 19,
+    "fields": {
+        "author": [
+            "gab@gmail.com"
+        ],
+        "title": "How to use python to send emails",
+        "body": "<p>Python is great to send emails.</p>",
+        "slug": "how-to-use-python-to-send-emails",
+        "category": "PROGRAMMING",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_9cJJAEj.jpg",
+        "created": "2024-12-11T16:58:38.323Z",
+        "updated": "2024-12-11T16:58:38.323Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 25,
+    "fields": {
+        "author": [
+            "oko@gmail.com"
+        ],
+        "title": "temperature",
+        "body": "<p>temperaure is very cold.</p>",
+        "slug": "temperature",
+        "category": "PROGRAMMING",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_ak1gbMR.jpg",
+        "created": "2024-12-11T18:04:19.698Z",
+        "updated": "2024-12-11T18:04:19.698Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 30,
+    "fields": {
+        "author": [
+            "uvy@gmail.com"
+        ],
+        "title": "How to use Python to send an Email",
+        "body": "<p>Python can be used to dynamically send emails.</p>",
+        "slug": "how-to-use-python-to-send-an-email",
+        "category": "PROGRAMMING",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_KQOBZxc.jpg",
+        "created": "2024-12-11T20:09:33.896Z",
+        "updated": "2024-12-11T20:09:33.896Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 31,
+    "fields": {
+        "author": [
+            "oko@gmail.com"
+        ],
+        "title": "How to use Tailwindcss with Reactjs",
+        "body": "<p>Tailwindcss is a great tool for styling.</p>",
+        "slug": "how-to-use-tailwindcss-with-reactjs",
+        "category": "PROGRAMMING",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_7y2LbUC.jpg",
+        "created": "2024-12-11T20:12:13.453Z",
+        "updated": "2024-12-11T20:12:13.453Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 32,
+    "fields": {
+        "author": [
+            "josh@gmail.com"
+        ],
+        "title": "Understand Dockerfile",
+        "body": "<h1>Introduction</h1><p>Dockerfile is the basic concept for building Docker images. It is better to understand it if you want to dig into Docker image building scenarios a bit more deeply.</p><p><br></p><p>Dockerfile is a text file that contains a list of commands (instructions), which describes how a Docker image is built based on them. The command&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">docker build</code>&nbsp;tells Docker to build the image by following the content (instructions) inside the Dockerfile.</p><h1>Structure and Format</h1><p>Dockerfile starts with a&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">FROM</code>&nbsp;command which indicates the base image. The subsequent commands in the Docker file are executed on the base image which must be a valid image.</p><p><br></p><p>Here is the format:</p><pre class=\"ql-syntax\" spellcheck=\"false\"># Comments\r\nCOMMAND arguments\r\n</pre><p>A comment line starts with&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">#</code>&nbsp;and describes the purposes or whatever you want.</p><p>The&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">COMMAND</code>&nbsp;is not required to be uppercase but it is a convention here to distinguish them from arguments obviously.</p><p>An example of Dockerfile:</p><pre class=\"ql-syntax\" spellcheck=\"false\"># The latest version of Ubuntu is used as the base image for this Dockerfile.\r\nFROM ubuntu:latest\r\n# Set the author field for the generated image.\r\nMAINTAINER rocky.chen@example.com\r\n# Run some commands.\r\nRUN apt-get update &amp;&amp; apt-get install -yq curl\r\nRUN apt-get clean\r\n# Commands to run when the generated image gets launched.\r\nCMD [\"top\"]\r\nCMD [\"ls\", \"-l\"]\r\n# Set working directory and environment variables.\r\nWORKDIR /root\r\nENV VAR1 version1\r\n# Add a shell script to the generated image.\r\nADD run.sh /root/run.sh\r\nRUN chmod +x run.sh\r\n# Set entry point and argments for the generated image.\r\nENTRYPOINT [\"./run.sh\"]\r\nCMD [\"arg1\"]\r\n</pre><h1>Build Context</h1><p>To build your Docker image, you could call&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">docker image build</code>&nbsp;command by specifying building directory with the Dockerfile in the terminal and some arguments can be provided as well. For example:</p><p><br></p><pre class=\"ql-syntax\" spellcheck=\"false\">$ docker image build .\r\n</pre><p>It tells Docker to build an image according to the Docker file in the current directory, called the&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">context</code>&nbsp;of the build.</p><p>An important note here is the build is run by the Docker daemon instead of the CLI, so the entire context is transferred to the daemon. From the output of the building command above, this was shown at the beginning:</p><pre class=\"ql-syntax\" spellcheck=\"false\">Sending build context to Docker daemon  3.584kB\r\n</pre><p>As you noticed, the output also tells how many data transferred (3.584kB in the example). Therefore, a warning from&nbsp;<a href=\"https://docs.docker.com/engine/reference/builder/\" rel=\"noopener noreferrer\" target=\"_blank\" style=\"color: inherit;\">Docker document</a>&nbsp;is:</p><blockquote><em>Do not use your root directory,&nbsp;</em><code style=\"background-color: rgb(242, 242, 242);\"><em>/</em></code><em>, as the&nbsp;</em><code style=\"background-color: rgb(242, 242, 242);\"><em>PATH</em></code><em>&nbsp;as it causes the build to transfer the entire contents of your hard drive to the Docker daemon.</em></blockquote><p><br></p><p>A&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">.dockerignore</code>&nbsp;file is useful sometimes when you want to ignore some files in the Docker image context directory.</p><h1>Layers</h1><p>When the Docker daemon builds your image, it executes the steps defined in the Dockerfile. A container is generated in each step and the instruction is run inside of the generated container. Once the instruction succeeds, the container is stored as a new image, as a new layer is added. The next instruction will build another new one on top of the previous one.</p><p><br></p><p>Let’s have a quick look on the fully output of building the example Dockerfile:</p><pre class=\"ql-syntax\" spellcheck=\"false\">Sending build context to Docker daemon  3.584kB\r\nStep 1/12 : FROM ubuntu:latest\r\n ---&gt; d70eaf7277ea\r\nStep 2/12 : MAINTAINER rocky.chen@example.com\r\n ---&gt; Running in 5d1f44d64602\r\nRemoving intermediate container 5d1f44d64602\r\n ---&gt; 82eb396b28ec\r\nStep 3/12 : RUN apt-get update &amp;&amp; apt-get install -yq curl\r\n ---&gt; Running in cc6adb835c4d\r\n...\r\nRemoving intermediate container cc6adb835c4d\r\n ---&gt; bbd0dc87c576\r\nStep 4/12 : RUN apt-get clean\r\n ---&gt; Running in 7664a4778017\r\nRemoving intermediate container 7664a4778017\r\n ---&gt; a9ed19e6119d\r\nStep 5/12 : CMD [\"top\"]\r\n ---&gt; Running in 7e37bb170506\r\nRemoving intermediate container 7e37bb170506\r\n ---&gt; d6c8736f0e9f\r\nStep 6/12 : CMD [\"ls\", \"-l\"]\r\n ---&gt; Running in cbd1a7512232\r\nRemoving intermediate container cbd1a7512232\r\n ---&gt; 0c087c832e7f\r\nStep 7/12 : WORKDIR /root\r\n ---&gt; Running in 3068d7075458\r\nRemoving intermediate container 3068d7075458\r\n ---&gt; d80343d04808\r\nStep 8/12 : ENV VAR1 version1\r\n ---&gt; Running in ae6480ddac50\r\nRemoving intermediate container ae6480ddac50\r\n ---&gt; 3c649e8e249c\r\nStep 9/12 : ADD run.sh /root/run.sh\r\n ---&gt; b0419c4d6864\r\nStep 10/12 : RUN chmod +x run.sh\r\n ---&gt; Running in 12520302b333\r\nRemoving intermediate container 12520302b333\r\n ---&gt; f52955a93631\r\nStep 11/12 : ENTRYPOINT [\"./run.sh\"]\r\n ---&gt; Running in 22bc5cc335b1\r\nRemoving intermediate container 22bc5cc335b1\r\n ---&gt; 409dee822026\r\nStep 12/12 : CMD [\"arg1\"]\r\n ---&gt; Running in 44cf42bcd050\r\nRemoving intermediate container 44cf42bcd050\r\n ---&gt; 8c2b84201d65\r\nSuccessfully built 8c2b84201d65\r\nSuccessfully tagged myimage:latest\r\n</pre><p>There are 12 steps per the output texts because there are 12 lines of instructions in the Dockerfile.</p><p>After all steps complete, the image could be shown in the output of the command&nbsp;<code style=\"background-color: rgb(242, 242, 242);\">docker image ls</code>:</p><pre class=\"ql-syntax\" spellcheck=\"false\">$ docker image ls\r\nREPOSITORY TAG    IMAGE ID     CREATED        SIZE\r\nmy_image   latest 6c284ed9fe68 17 minutes ago 115MB\r\n</pre><h1>Cache</h1><p>Let’s run the build command again with the same docker file:</p><p><br></p><pre class=\"ql-syntax\" spellcheck=\"false\">$ docker build -t my_image .\r\nSending build context to Docker daemon  3.584kB\r\nStep 1/12 : FROM ubuntu:latest\r\n ---&gt; d70eaf7277ea\r\nStep 2/12 : MAINTAINER rocky.chen@example.com\r\n ---&gt; Using cache\r\n ---&gt; 82eb396b28ec\r\nStep 3/12 : RUN apt-get update &amp;&amp; apt-get install -yq curl\r\n ---&gt; Using cache\r\n ---&gt; bbd0dc87c576\r\nStep 4/12 : RUN apt-get clean\r\n ---&gt; Using cache\r\n ---&gt; 738becba91a0\r\nStep 5/12 : CMD [\"top\"]\r\n ---&gt; Using cache\r\n ---&gt; 58e31420c1dd\r\nStep 6/12 : CMD [\"ls\", \"-l\"]\r\n ---&gt; Using cache\r\n ---&gt; ec643d75f7ee\r\nStep 7/12 : WORKDIR /root\r\n ---&gt; Using cache\r\n ---&gt; 4c79437f5c37\r\nStep 8/12 : ENV VAR1 version1\r\n ---&gt; Using cache\r\n ---&gt; 8ce59472dc52\r\nStep 9/12 : ADD run.sh /root/run.sh\r\n ---&gt; Using cache\r\n ---&gt; ab7f0e31b020\r\nStep 10/12 : RUN chmod +x run.sh\r\n ---&gt; Using cache\r\n ---&gt; 769075a61ee3\r\nStep 11/12 : ENTRYPOINT [\"./run.sh\"]\r\n ---&gt; Using cache\r\n ---&gt; 26b434f12885\r\nStep 12/12 : CMD [\"arg1\"]\r\n ---&gt; Using cache\r\n ---&gt; 6c284ed9fe68\r\nSuccessfully built 6c284ed9fe68\r\nSuccessfully tagged my_image:latest\r\n</pre><p>You would notice the ‘<strong>Using cache</strong>’ in each step that indicates the Docker daemon used cache directly to generate the intermedium image instead of building again.</p><p>The cache is used when the instructions in the Dockerfile are same or unchanged with the previous version.</p><h1>Image Launch</h1><p>Once the image is built successfully, it is stored in the local registry by default. To list all images, use following command:</p><p><br></p><pre class=\"ql-syntax\" spellcheck=\"false\">$ docker image ls -a\r\n</pre><p><br></p>",
+        "slug": "prometheus-for-monitoring",
+        "category": "DEVOPS",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_boHa1Df.jpg",
+        "created": "2024-12-11T20:13:34.111Z",
+        "updated": "2024-12-12T11:20:30.054Z"
+    }
+},
+{
+    "model": "api.note",
+    "pk": 33,
+    "fields": {
+        "author": [
+            "john@gmail.com"
+        ],
+        "title": "Grafana in AWS",
+        "body": "<p>AWS has a managed grafana service.</p>",
+        "slug": "grafana-in-aws",
+        "category": "DEVOPS",
+        "featured_image": "blog_img/andrew-neel-cckf4TsHAuw-unsplash_9K4OX3B.jpg",
+        "created": "2024-12-11T20:15:52.909Z",
+        "updated": "2024-12-11T20:15:52.909Z"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+        "action_time": "2024-11-25T16:29:45.034Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "1",
+        "object_repr": "john",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+        "action_time": "2024-12-02T20:17:09.724Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "2",
+        "object_repr": "gab",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Image\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+        "action_time": "2024-12-04T05:22:13.421Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "2",
+        "object_repr": "gab",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Image\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+        "action_time": "2024-12-04T19:21:05.133Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "7",
+        "object_repr": "Jenkins",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Author\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 5,
+    "fields": {
+        "action_time": "2024-12-05T19:26:12.288Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "5",
+        "object_repr": "learn AWS",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 6,
+    "fields": {
+        "action_time": "2024-12-11T10:16:47.606Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "11",
+        "object_repr": "Grafana",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 7,
+    "fields": {
+        "action_time": "2024-12-11T10:17:02.912Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "10",
+        "object_repr": "Prometheus",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 8,
+    "fields": {
+        "action_time": "2024-12-11T10:18:06.493Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "9",
+        "object_repr": "Github Action",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 9,
+    "fields": {
+        "action_time": "2024-12-11T10:18:22.663Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "8",
+        "object_repr": "Docker",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 10,
+    "fields": {
+        "action_time": "2024-12-11T10:18:35.501Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "7",
+        "object_repr": "Jenkins",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 11,
+    "fields": {
+        "action_time": "2024-12-11T10:18:44.484Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "6",
+        "object_repr": "Terraform",
+        "action_flag": 2,
+        "change_message": "[{\"changed\": {\"fields\": [\"Category\"]}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 12,
+    "fields": {
+        "action_time": "2024-12-11T12:37:24.644Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "10",
+        "object_repr": "ken",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 13,
+    "fields": {
+        "action_time": "2024-12-11T17:38:09.745Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "6",
+        "object_repr": "Terraform",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 14,
+    "fields": {
+        "action_time": "2024-12-11T17:39:00.985Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "21",
+        "object_repr": "Azure blob store",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 15,
+    "fields": {
+        "action_time": "2024-12-11T17:40:07.823Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "6",
+        "object_repr": "ell",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 16,
+    "fields": {
+        "action_time": "2024-12-11T17:40:17.852Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "9",
+        "object_repr": "eni",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 17,
+    "fields": {
+        "action_time": "2024-12-11T17:40:27.654Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "11",
+        "object_repr": "ken",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 18,
+    "fields": {
+        "action_time": "2024-12-11T17:40:42.669Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "4",
+        "object_repr": "kel",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 19,
+    "fields": {
+        "action_time": "2024-12-11T17:41:08.323Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "8",
+        "object_repr": "kevwe",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 20,
+    "fields": {
+        "action_time": "2024-12-11T18:28:53.364Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "29",
+        "object_repr": "fourly",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 21,
+    "fields": {
+        "action_time": "2024-12-11T18:29:01.144Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "28",
+        "object_repr": "third",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 22,
+    "fields": {
+        "action_time": "2024-12-11T18:29:08.502Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "27",
+        "object_repr": "second",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 23,
+    "fields": {
+        "action_time": "2024-12-11T18:29:16.247Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "26",
+        "object_repr": "soapy",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 24,
+    "fields": {
+        "action_time": "2024-12-11T18:29:24.431Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "24",
+        "object_repr": "i don tire",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 25,
+    "fields": {
+        "action_time": "2024-12-11T18:29:33.825Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "23",
+        "object_repr": "jenkinsfile",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 26,
+    "fields": {
+        "action_time": "2024-12-11T18:29:47.790Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "16",
+        "object_repr": "How to use TailwindCSS with Reactjs",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 27,
+    "fields": {
+        "action_time": "2024-12-11T18:29:57.012Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "17",
+        "object_repr": "how to deploy aws ec2",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 28,
+    "fields": {
+        "action_time": "2024-12-11T18:30:05.641Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "18",
+        "object_repr": "JWT TOKEN",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 29,
+    "fields": {
+        "action_time": "2024-12-11T18:30:37.007Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "5",
+        "object_repr": "kelly",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 30,
+    "fields": {
+        "action_time": "2024-12-11T18:30:52.598Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "22",
+        "object_repr": "Gemini",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 31,
+    "fields": {
+        "action_time": "2024-12-11T18:31:07.067Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "customuser"
+        ],
+        "object_id": "7",
+        "object_repr": "uvy",
+        "action_flag": 3,
+        "change_message": ""
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 32,
+    "fields": {
+        "action_time": "2024-12-11T18:32:15.604Z",
+        "user": [
+            "john@gmail.com"
+        ],
+        "content_type": [
+            "api",
+            "note"
+        ],
+        "object_id": "7",
+        "object_repr": "Jenkins",
+        "action_flag": 3,
+        "change_message": ""
+    }
+}
+]
