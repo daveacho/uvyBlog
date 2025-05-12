@@ -1,0 +1,97 @@
+# name: Deploy to Amazon ECS
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# env:
+#   AWS_REGION: eu-west-2
+#   ECR_REPOSITORY: ecs-test
+#   ECS_CLUSTER: my-ecs-cluster
+#   ECS_SERVICE: my-ecs-service
+#   CONTAINER_NAME: my-container
+#   TASK_DEFINITION: ecs-task-def.json
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ env.AWS_REGION }}
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
+
+#       - name: Build, tag, and push image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+#       - name: Fill in the new image ID in the Amazon ECS task definition
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.TASK_DEFINITION }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+#       - name: Deploy Amazon ECS task definition
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
+
+
+name: building and pushing docker iamges to ecr
+
+on:
+  workflow_dispatch:
+  
+env:
+  AWS_REGISTRY: 385771716406.dkr.ecr.eu-west-2.amazonaws.com
+  AWS_REPOSITORY: ecs-test
+  AWS_REGION: eu-west-2
+jobs:
+  dockerization:
+    run-on: ubuntu:latest
+    steps:
+      - name: checkout code 
+        uses: actions/checkout@v3
+
+      - name: installing aws cli and docker
+        run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+        sudo apt install docker.io -y
+
+      - name: authenicated with aws using access key and secret key
+        uses: actions/aws_credentials
+
+      - name: login to aws ecr
+        run: |
+        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 385771716406.dkr.ecr.eu-west-2.amazonaws.com
+
+      - name:
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+        cd blog
+        docker build -t $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG .
+        docker push $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG
+
