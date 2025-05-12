@@ -73,12 +73,8 @@ jobs:
       - name: checkout code 
         uses: actions/checkout@v3
 
-      - name: installing aws cli and docker
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-          sudo apt install docker.io -y
+      - name: installing docker.io
+        run: sudo apt install docker.io -y
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -86,9 +82,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: authenicated with aws using access key and secret key
-        uses: actions/aws_credentials
 
       - name: login to aws ecr
         run: |
