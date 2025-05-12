@@ -75,23 +75,23 @@ jobs:
 
       - name: installing aws cli and docker
         run: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
-        sudo ./aws/install
-        sudo apt install docker.io -y
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          sudo apt install docker.io -y
 
       - name: authenicated with aws using access key and secret key
         uses: actions/aws_credentials
 
       - name: login to aws ecr
         run: |
-        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 385771716406.dkr.ecr.eu-west-2.amazonaws.com
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 385771716406.dkr.ecr.eu-west-2.amazonaws.com
 
       - name:
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-        cd blog
-        docker build -t $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG .
-        docker push $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG
+          cd blog
+          docker build -t $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG .
+          docker push $AWS_REGISTRY/$AWS_REPOSITORY:$IMAGE_TAG
 
