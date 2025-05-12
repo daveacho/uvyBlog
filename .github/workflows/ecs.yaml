@@ -60,7 +60,9 @@
 name: building and pushing docker iamges to ecr
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
   
 env:
   AWS_REGISTRY: 385771716406.dkr.ecr.eu-west-2.amazonaws.com
