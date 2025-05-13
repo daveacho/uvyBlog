@@ -150,6 +150,11 @@ jobs:
             --query 'taskDefinition' > previous-task-definition.json
           echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
 
+      - name: Test output
+        run: |
+          echo ${{ steps.get-task-def.outputs.previous_task_definition }}
+          cat ${{ steps.get-task-def.outputs.previous_task_definition }}
+          
       - name: Update task definition with new image
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -157,6 +162,11 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
+
+      - name: Debug updated task definition
+        run: |
+          echo "Task definition path: ${{ steps.task-def.outputs.task-definition }}"
+          cat ${{ steps.task-def.outputs.task-definition }}
 
       - name: Deploy to Amazon ECS
         id: deploy
