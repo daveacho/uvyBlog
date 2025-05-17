@@ -1,7 +1,7 @@
 name: practicing github actions workflow
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
 env:
   NAME: "john"
 jobs:
