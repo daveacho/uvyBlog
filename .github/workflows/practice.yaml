@@ -1,0 +1,13 @@
+name: practicing github actions workflow
+
+on:
+  workflow_dispatch
+env:
+  NAME: "john"
+jobs:
+  playing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: echoing my name
+        run: |
+          echo "my name is ${{ env.NAME }}"
