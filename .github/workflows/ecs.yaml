@@ -192,3 +192,15 @@
 #           aws ecs wait services-stable \
 #             --cluster ${{ env.ECS_CLUSTER }} \
 #             --services ${{ env.ECS_SERVICE }}
+
+name: practice two
+
+on:
+  workflow_dispatch:
+
+jobs:
+  proct:
+    runs-on: ubuntu-latest
+    steps:
+      - name: practive
+        run: echo "john"

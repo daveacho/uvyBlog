@@ -1,5 +1,15 @@
 
-# name: CI Pipeline for React and Django
+name: CI Pipeline for new React and Django
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pract:
+   runs-on: ubuntu-latest
+   steps:
+     - name: echo something
+       run: echo "practicing"
 
 # on:
 #   push:
