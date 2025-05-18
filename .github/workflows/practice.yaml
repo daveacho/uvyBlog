@@ -1,13 +1,43 @@
-name: practicing github actions workflow
+# name: practicing github actions workflow
+
+# on:
+#   workflow_dispatch:
+# env:
+#   NAME: "john"
+# jobs:
+#   playing:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: echoing my name
+#         id: one
+#         run: |
+#           echo "my name is ${{ env.NAME }}" >> names.txt
+#           echo "names=names.txt" > $GITHUB_OUTPUT
+      
+#       - name: trying out output in github
+#         run: |
+#           ${{ steps.one.outputs.names }}
+
+name: practicing github action two
 
 on:
   workflow_dispatch:
+
 env:
   NAME: "john"
 jobs:
-  playing:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: echoing my name
+      - name: echo
+        id: one
         run: |
-          echo "my name is ${{ env.NAME }}"
+          echo "practicing output"
+          echo $NAME >> firstname.txt
+          echo "firstname=firstname.txt" >> $GITHUB_OUTPUT
+      - name: output from step one
+        id: two
+        run: |
+          echo "output from step one"
+          cat ${{ steps.one.outputs.firstname }}
+

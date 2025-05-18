@@ -203,4 +203,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: practive
-        run: echo "john"
+        run: |
+          echo "john"
+
+
+      - name: output previous step
+        run: 
