@@ -33,7 +33,7 @@ jobs:
         id: one
         run: |
           echo "practicing output"
-          echo $NAME >> firstname.txt
+          echo ${{ env.NAME }} >> firstname.txt
           echo "firstname=firstname.txt" >> $GITHUB_OUTPUT
       - name: output from step one
         id: two
