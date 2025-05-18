@@ -46,4 +46,9 @@ jobs:
         if: ${{ env.COUNTRY == 'england' }}
         run: |
           echo "$(cat ${{steps.one.outputs.firstname}}) is from ${{ env.COUNTRY }}"
+      - name: using if statement in bash
+        run: |
+          if [ ${{ env.NAME }} = "john"]; then
+            echo "hello ${{ env.NAME }}"
+          fi
 
