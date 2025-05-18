@@ -43,7 +43,7 @@ jobs:
           cat ${{ steps.one.outputs.firstname }}
       - name: trying out if statement
         id: three
+        if: ${{ env.COUNTRY == 'england' }}
         run: |
-          if: ${{ env.COUNTRY == 'england' }}
-          run echo "${{steps.one.outputs.firstname}} is from ${{ env.COUNTRY }}"
+          echo "$(cat ${{steps.one.outputs.firstname}}) is from ${{ env.COUNTRY }}"
 
