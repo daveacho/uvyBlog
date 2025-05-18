@@ -60,3 +60,6 @@ jobs:
       - name: new branch
         run: echo "great"
 
+      - name: trying new branch again
+        run: echo "God is great"
+
