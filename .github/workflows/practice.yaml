@@ -44,6 +44,6 @@ jobs:
       - name: trying out if statement
         id: three
         run: |
-          if: ${{ env.COUNTRY == "england" }}
+          if: ${{ env.COUNTRY == 'england' }}
           run echo "${{steps.one.outputs.firstname}} is from ${{ env.COUNTRY }}"
 
