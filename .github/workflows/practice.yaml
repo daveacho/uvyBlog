@@ -25,6 +25,7 @@ on:
 
 env:
   NAME: "john"
+  COUNTRY: "england"
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -40,4 +41,9 @@ jobs:
         run: |
           echo "output from step one"
           cat ${{ steps.one.outputs.firstname }}
+      - name: trying out if statement
+        id: three
+        run: |
+          if: ${{ env.COUNTRY == "england" }}
+          run echo "${{steps.one.outputs.firstname}} is from ${{ env.COUNTRY }}"
 
