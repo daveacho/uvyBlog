@@ -1,7 +1,9 @@
-name: practicing github action two
+name: new github action workflow
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - testone
 
 env:
   NAME: "john"
