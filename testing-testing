@@ -920,138 +920,139 @@
 # #         run: |
 # #           echo "Deployment to ${{ matrix.environment }} failed and rollback completed."
 # #           # Add Slack/email notification here (e.g., slackapi/slack-github-action)
+## ENVIRONMENT="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || github.ref_name }}"
 
-```yaml
-name: Deploy to Amazon ECS
+# ```yaml
+# name: Deploy to Amazon ECS
 
-on:
-  push:
-    branches:
-      - dev
-      - staging
-      - prod
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment (dev, staging, prod)'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
+# on:
+#   push:
+#     branches:
+#       - dev
+#       - staging
+#       - prod
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Target environment (dev, staging, prod)'
+#         required: true
+#         default: 'dev'
+#         type: choice
+#         options:
+#           - dev
+#           - staging
+#           - prod
 
-env:
-  AWS_REGION: eu-west-2
-  ECR_REPOSITORY: ecs-test
-  CONTAINER_NAME: myContainer
+# env:
+#   AWS_REGION: eu-west-2
+#   ECR_REPOSITORY: ecs-test
+#   CONTAINER_NAME: myContainer
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-jobs:
-  deploy:
-    name: Deploy to ${{ matrix.environment || github.event.inputs.environment }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment:
-          - dev
-          - staging
-          - prod
-        include:
-          - environment: dev
-            ecs_cluster: myCluster-dev
-            ecs_service: myservice-dev
-            task_definition: .aws/task-definition-dev.json
-          - environment: staging
-            ecs_cluster: myCluster-staging
-            ecs_service: myservice-staging
-            task_definition: .aws/task-definition-staging.json
-          - environment: prod
-            ecs_cluster: myCluster-prod
-            ecs_service: myservice-prod
-            task_definition: .aws/task-definition-prod.json
-      fail-fast: false
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment || github.event_name == 'push' && github.ref_name == matrix.environment
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+# jobs:
+#   deploy:
+#     name: Deploy to ${{ matrix.environment || github.event.inputs.environment }}
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         environment:
+#           - dev
+#           - staging
+#           - prod
+#         include:
+#           - environment: dev
+#             ecs_cluster: myCluster-dev
+#             ecs_service: myservice-dev
+#             task_definition: .aws/task-definition-dev.json
+#           - environment: staging
+#             ecs_cluster: myCluster-staging
+#             ecs_service: myservice-staging
+#             task_definition: .aws/task-definition-staging.json
+#           - environment: prod
+#             ecs_cluster: myCluster-prod
+#             ecs_service: myservice-prod
+#             task_definition: .aws/task-definition-prod.json
+#       fail-fast: false
+#     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment || github.event_name == 'push' && github.ref_name == matrix.environment
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GithubActionSessions
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+#       - name: Build, tag, and push image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Get the current task definition
-        id: get-task-def
-        run: |
-          TASK_FAMILY=$(jq -r '.family' ${{ matrix.task_definition }})
-          aws ecs describe-task-definition \
-            --task-definition $TASK_FAMILY \
-            --query taskDefinition > previous-task-definition.json
-          echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
+#       - name: Get the current task definition
+#         id: get-task-def
+#         run: |
+#           TASK_FAMILY=$(jq -r '.family' ${{ matrix.task_definition }})
+#           aws ecs describe-task-definition \
+#             --task-definition $TASK_FAMILY \
+#             --query taskDefinition > previous-task-definition.json
+#           echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
 
-      - name: Update ECS task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ matrix.task_definition }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+#       - name: Update ECS task definition with new image
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ matrix.task_definition }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}
 
-      - name: Debug updated ECS task definition
-        run: |
-          echo "Task definition path: ${{ steps.task-def.outputs.task-definition }}"
-          cat ${{ steps.task-def.outputs.task-definition }}
+#       - name: Debug updated ECS task definition
+#         run: |
+#           echo "Task definition path: ${{ steps.task-def.outputs.task-definition }}"
+#           cat ${{ steps.task-def.outputs.task-definition }}
 
-      - name: Deploy Amazon ECS task definition
-        id: deploy
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ matrix.ecs_service }}
-          cluster: ${{ matrix.ecs_cluster }}
-          wait-for-service-stability: true
-        continue-on-error: true
+#       - name: Deploy Amazon ECS task definition
+#         id: deploy
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ matrix.ecs_service }}
+#           cluster: ${{ matrix.ecs_cluster }}
+#           wait-for-service-stability: true
+#         continue-on-error: true
 
-      - name: Rollback on failure
-        if: steps.deploy.outcome == 'failure'
-        run: |
-          echo "Deployment failed, rolling back to previous task definition"
-          PREV_TASK_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://${{ steps.get-task-def.outputs.previous_task_definition }} \
-            --query 'taskDefinition.taskDefinitionArn' --output text)
-          aws ecs update-service \
-            --cluster ${{ matrix.ecs_cluster }} \
-            --service ${{ matrix.ecs_service }} \
-            --task-definition $PREV_TASK_ARN \
-            --force-new-deployment
-          aws ecs wait services-stable \
-            --cluster ${{ matrix.ecs_cluster }} \
-            --services ${{ matrix.ecs_service }}
+#       - name: Rollback on failure
+#         if: steps.deploy.outcome == 'failure'
+#         run: |
+#           echo "Deployment failed, rolling back to previous task definition"
+#           PREV_TASK_ARN=$(aws ecs register-task-definition \
+#             --cli-input-json file://${{ steps.get-task-def.outputs.previous_task_definition }} \
+#             --query 'taskDefinition.taskDefinitionArn' --output text)
+#           aws ecs update-service \
+#             --cluster ${{ matrix.ecs_cluster }} \
+#             --service ${{ matrix.ecs_service }} \
+#             --task-definition $PREV_TASK_ARN \
+#             --force-new-deployment
+#           aws ecs wait services-stable \
+#             --cluster ${{ matrix.ecs_cluster }} \
+#             --services ${{ matrix.ecs_service }}
 
 
 
-```
+# ```
 
 #############################################
 
