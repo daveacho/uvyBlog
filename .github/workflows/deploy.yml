@@ -23,16 +23,7 @@ on:
 env:
   AWS_REGION: eu-west-2
   AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
-  STAGING_CLUSTER_NAME: api-staging
-  STAGING_SERVICE_NAME: my-staging-service
-  STAGING_ECR_REPOSITORY: ecs-test
-  STAGING_CONTAINER_NAME: my-container
-  PROD_CLUSTER_NAME: uvyblog-dev-cluster
-  PROD_SERVICE_NAME: uvyblog-dev-svc
-  PROD_ECR_REPOSITORY: ecs-test
-  PROD_CONTAINER_NAME: django_app
-  TASK_DEFINITION_PATH: .aws/task-definition.json
-
+  TASK_DEFINITION_PATH: .aws/task-definition.json 
 
 permissions:
   id-token: write
@@ -75,17 +66,18 @@ jobs:
         environment:
           - staging
           - prod
+       
         include:
           - environment: staging
-            ecs_cluster: ${{ env.STAGING_CLUSTER_NAME }}
-            ecs_service: ${{ env.STAGING_SERVICE_NAME }}
-            ecr_repository: ${{ env.STAGING_ECR_REPOSITORY }}
-            container_name: ${{ env.STAGING_CONTAINER_NAME }}
+            ecs_cluster: api-staging
+            ecs_service: my-staging-service
+            ecr_repository: ecs-test
+            container_name: my-container
           - environment: prod
-            ecs_cluster: ${{ env.PROD_CLUSTER_NAME }}
-            ecs_service: ${{ env.PROD_SERVICE_NAME }}
-            ecr_repository: ${{ env.PROD_ECR_REPOSITORY }}
-            container_name: ${{ env.PROD_CONTAINER_NAME }}
+            ecs_cluster: uvyblog-dev-cluster
+            ecs_service: uvyblog-dev-svc
+            ecr_repository: ecs-test
+            container_name: django_app
       fail-fast: false
     if: |
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment) ||
