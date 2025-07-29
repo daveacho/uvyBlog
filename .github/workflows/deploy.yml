@@ -1,0 +1,614 @@
+name: Deploy to Amazon ECS Staging
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - staging
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (staging)'
+        required: true
+        default: 'staging'
+
+env:
+  AWS_REGION: eu-west-2
+  ECR_REPOSITORY: ecs-test
+  ECS_SERVICE: uvyblog-dev-svc
+  ECS_CLUSTER: uvyblog-dev-cluster
+  ECS_TASK_DEFINITION_ARN: arn:aws:ecs:eu-west-2:385771716406:task-definition/my-task-def:1
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: django_app
+  AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Code and Docker Build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GithubActionSession
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd blog
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GithubActionSession
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd blog
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Get Current Task Definition
+        id: get-task-def
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION_ARN }} \
+            --query 'taskDefinition' > previous-task-definition.json
+          echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
+
+      - name: Update ECS Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS Task Definition
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+        continue-on-error: true
+
+      - name: Rollback on Failure
+        if: steps.deploy.outcome == 'failure'
+        run: |
+          echo "Deployment failed, rolling back to previous task definition"
+          PREVIOUS_TASK_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://${{ steps.get-task-def.outputs.previous_task_definition }} \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition $PREVIOUS_TASK_ARN \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+
+# name: Deploy only to one Amazon ECS Environment 
+
+# on:
+#   push:
+#     branches:
+#       - staging
+#   pull_request:
+#     branches:
+#       - staging
+
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Target environment (staging)'
+#         required: true
+#         default: 'staging'
+
+# env:
+#   AWS_REGION: eu-west-2
+#   ECR_REPOSITORY: ecs-test
+#   ECS_SERVICE: my-staging-service
+#   ECS_CLUSTER: api-staging
+#   ECS_TASK_DEFINITION_ARN: arn:aws:ecs:eu-west-2:385771716406:task-definition/my-task-def:1
+#   ECS_TASK_DEFINITION: .aws/task-definition.json 
+#   CONTAINER_NAME: my-container
+
+# permissions:
+#   id-token: write
+#   contents: read 
+
+# jobs:
+#   validate:
+#     name: Validate Code and Docker Build
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'pull_request'
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         env:
+#           AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build Docker Image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: validate
+    
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         env:
+#           AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+#           #AWS_REGION: us-east-2
+#         with: 
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessionss 
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build, tag, and push image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           # Build a docker container and
+#           # push it to ECR so that it can
+#           # be deployed to ECS.
+#           cd blog
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+#       - name: Get the current task definition
+#         id: get-task-def
+#         run: |
+#           aws ecs describe-task-definition \
+#           --task-definition ${{ env.ECS_TASK_DEFINITION_ARN }} \
+#           --query 'taskdefinition' > previous-task-definition.json
+#           echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
+
+#       - name: Update ECS task definition with new image
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.ECS_TASK_DEFINITION }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}
+
+#       - name: Deploy Amazon ECS task definition
+#         id: deploy
+#         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
+#         continue-on-error: true #Allow rollback step to run if deployment fails
+
+#       - name: Rollback on failure
+#         if: steps.deploy.outcome == 'failure'
+#         run: |
+#           echo "Deployment failed, rolling back to previous task definition"
+#           aws ecs update-service \
+#             --cluster ${{ env.ECS_CLUSTER }} \
+#             --service ${{ env.ECS_SERVICE }} \
+#             --task-definition $(aws ecs register-task-definition) \
+#               --cli-input-json file://${{ steps.get-task-def.output.previous_task_definition }} \
+#               --query 'taskdefinition.taskdefinitionArn' --output text \
+#           --force-new-deployment
+#           aws ecs wait service-stable \
+#             --cluster ${{env.ECS_CLUSTER}}
+#             --services ${{env.ECS_SERVICE}}
+
+
+
+
+# name: Deploy to Amazon ECS
+
+# on:
+#   push:
+#     branches:
+#       - staging
+#       - main
+#   pull_request:
+#     branches:
+#       - staging
+#       - main
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Target environment (staging, prod)'
+#         required: true
+#         default: 'staging'
+#         type: choice
+#         options:
+#           - staging
+#           - main
+
+# env:
+#   AWS_REGION: eu-west-2
+#   AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+#   TASK_DEFINITION_PATH: .aws/task-definition.json 
+#   ECR_REPOSITORY: ecs-test
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+# jobs:
+#   validate:
+#     name: Validate Code and Docker Build
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'pull_request'
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build Docker Image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+#   deploy:
+#     name: Deploy to ${{ github.event.inputs.environment || github.ref_name }}
+#     runs-on: ubuntu-latest
+#     needs: validate
+#     if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' && (github.ref_name == 'staging' || github.ref_name == 'main') }}
+    
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Set Environment Variables
+#         run: |
+#           if [[ "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || github.ref_name }}" == "staging" ]]; then
+#             echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+#             echo "ECS_CLUSTER=api-staging" >> $GITHUB_ENV
+#             echo "ECS_SERVICE=my-staging-service" >> $GITHUB_ENV
+#             echo "ECR_REPOSITORY=ecs-test" >> $GITHUB_ENV
+#             echo "CONTAINER_NAME=my-container" >> $GITHUB_ENV
+#           elif [[ "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || github.ref_name }}" == "main" || "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment }}" == "prod" ]]; then
+#             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+#             echo "ECS_CLUSTER=uvyblog-dev-cluster" >> $GITHUB_ENV
+#             echo "ECS_SERVICE=uvyblog-dev-svc" >> $GITHUB_ENV
+#             echo "ECR_REPOSITORY=ecs-test" >> $GITHUB_ENV
+#             echo "CONTAINER_NAME=django_app" >> $GITHUB_ENV
+#           fi
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build, Tag, and Push Image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+#           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+#       - name: Get Current Task Definition
+#         id: get-task-def
+#         run: |
+#           TASK_FAMILY=$(jq -r '.family' ${{ env.TASK_DEFINITION_PATH }})
+#           aws ecs describe-task-definition \
+#             --task-definition $TASK_FAMILY \
+#             --query taskDefinition > previous-task-definition.json
+#           echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
+
+#       - name: Update ECS Task Definition
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.TASK_DEFINITION_PATH }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}
+
+#       - name: Debug Updated ECS Task Definition
+#         run: |
+#           echo "Task definition path: ${{ steps.task-def.outputs.task-definition }}"
+#           cat ${{ steps.task-def.outputs.task-definition }}
+
+#       - name: Deploy Amazon ECS Task Definition
+#         id: deploy
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
+#         continue-on-error: true
+
+#       - name: Rollback on Failure
+#         if: steps.deploy.outcome == 'failure'
+#         run: |
+#           echo "Deployment failed, rolling back to previous task definition"
+#           PREV_TASK_ARN=$(aws ecs register-task-definition \
+#             --cli-input-json file://${{ steps.get-task-def.outputs.previous_task_definition }} \
+#             --query 'taskDefinition.taskDefinitionArn' --output text)
+#           aws ecs update-service \
+#             --cluster ${{ env.ECS_CLUSTER }} \
+#             --service ${{ env.ECS_SERVICE }} \
+#             --task-definition $PREV_TASK_ARN \
+#             --force-new-deployment
+#           aws ecs wait services-stable \
+#             --cluster ${{ env.ECS_CLUSTER }} \
+#             --services ${{ env.ECS_SERVICE }}
+#           echo "Rollback completed to $PREV_TASK_ARN"
+
+#       - name: Notify on Success
+#         if: steps.deploy.outcome == 'success'
+#         run: |
+#           echo "Deployment to ${{ env.ENVIRONMENT }} succeeded!"
+
+#       - name: Notify on Failure
+#         if: failure()
+#         run: |
+#           echo "Deployment to ${{ env.ENVIRONMENT }} failed and rollback completed."
+#           # Add Slack/email notification here (e.g., slackapi/slack-github-action)
+
+
+##########################################################################
+
+# name: Deploy to Amazon ECS
+
+# on:
+#   push:
+#     branches:
+#       - staging
+#       - main
+#   pull_request:
+#     branches:
+#       - staging
+#       - main
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: 'Target environment (staging, prod)'
+#         required: true
+#         default: 'staging'
+#         type: choice
+#         options:
+#           - staging
+#           - prod
+
+# env:
+#   AWS_REGION: eu-west-2
+#   AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+#   TASK_DEFINITION_PATH: .aws/task-definition.json
+#   ECR_REPOSITORY: ecs-test
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+# jobs:
+#   validate:
+#     name: Validate Code and Docker Build
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'pull_request'
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build Docker Image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+
+#   deploy:
+#     name: Deploy to ${{ github.event.inputs.environment || github.ref_name }}
+#     runs-on: ubuntu-latest
+#     needs: validate
+#     #if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' && (github.ref_name == 'staging' || github.ref_name == 'main') }}
+#     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Set Environment Variables
+#         run: |
+#           ENVIRONMENT="staging"
+#           ENVIRONMENTTWO="main"
+#           if [[ "$ENVIRONMENT" == "staging" ]]; then
+#             echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+#             echo "ECS_CLUSTER=api-staging" >> $GITHUB_ENV
+#             echo "ECS_SERVICE=my-staging-service" >> $GITHUB_ENV
+#             echo "ECR_REPOSITORY=ecs-test" >> $GITHUB_ENV
+#             echo "CONTAINER_NAME=my-container" >> $GITHUB_ENV
+#           elif [[ "$ENVIRONMENTTWO" == "main" ]]; then
+#             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+#             echo "ECS_CLUSTER=uvyblog-dev-cluster" >> $GITHUB_ENV
+#             echo "ECS_SERVICE=uvyblog-dev-svc" >> $GITHUB_ENV
+#             echo "ECR_REPOSITORY=ecs-test" >> $GITHUB_ENV
+#             echo "CONTAINER_NAME=django_app" >> $GITHUB_ENV
+#           else
+#             echo "Invalid environment: $ENVIRONMENT"
+#             exit 1
+#           fi
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSessions
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build, Tag, and Push Image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+#           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+#       - name: Get Current Task Definition
+#         id: get-task-def
+#         run: |
+#           TASK_FAMILY=$(jq -r '.family' ${{ env.TASK_DEFINITION_PATH }})
+#           aws ecs describe-task-definition \
+#             --task-definition $TASK_FAMILY \
+#             --query taskDefinition > previous-task-definition.json
+#           echo "previous_task_definition=previous-task-definition.json" >> $GITHUB_OUTPUT
+
+#       - name: Update ECS Task Definition
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.TASK_DEFINITION_PATH }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}
+
+#       - name: Debug Updated ECS Task Definition
+#         run: |
+#           echo "Task definition path: ${{ steps.task-def.outputs.task-definition }}"
+#           cat ${{ steps.task-def.outputs.task-definition }}
+
+#       - name: Deploy Amazon ECS Task Definition
+#         id: deploy
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
+#         continue-on-error: true
+
+#       - name: Rollback on Failure
+#         if: steps.deploy.outcome == 'failure'
+#         run: |
+#           echo "Deployment failed, rolling back to previous task definition"
+#           PREV_TASK_ARN=$(aws ecs register-task-definition \
+#             --cli-input-json file://${{ steps.get-task-def.outputs.previous_task_definition }} \
+#             --query 'taskDefinition.taskDefinitionArn' --output text)
+#           aws ecs update-service \
+#             --cluster ${{ env.ECS_CLUSTER }} \
+#             --service ${{ env.ECS_SERVICE }} \
+#             --task-definition $PREV_TASK_ARN \
+#             --force-new-deployment
+#           aws ecs wait services-stable \
+#             --cluster ${{ env.ECS_CLUSTER }} \
+#             --services ${{ env.ECS_SERVICE }}
+#           echo "Rollback completed to $PREV_TASK_ARN"
+
+#       - name: Notify on Success
+#         if: steps.deploy.outcome == 'success'
+#         run: |
+#           echo "Deployment to ${{ env.ENVIRONMENT }} succeeded!"
+
+#       - name: Notify on Failure
+#         if: failure()
+#         run: |
+#           echo "Deployment to ${{ env.ENVIRONMENT }} failed and rollback completed."
+#           # Add Slack/email notification here (e.g., slackapi/slack-github-action)
