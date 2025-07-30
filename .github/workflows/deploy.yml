@@ -110,10 +110,10 @@ jobs:
           exit 1
         }
         echo "Current task definition: $CURRENT_TASK_DEF"
-        
-        # Extract family and revision number
-        FAMILY=$(echo $CURRENT_TASK_DEF | cut -d':' -f1)
-        CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | cut -d':' -f2)
+
+        # Extract family and revision using jq or awk to handle ARN structure
+        FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
+        CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
         PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
         
         # Check if previous revision exists
