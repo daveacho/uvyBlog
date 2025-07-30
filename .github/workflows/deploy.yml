@@ -18,6 +18,10 @@ env:
   # CONTAINER_NAME: django_app
   # AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
 
+permissions:
+  id-token: write
+  contents: read
+
 
 jobs:
   deploy:
