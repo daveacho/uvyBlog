@@ -95,18 +95,20 @@ jobs:
           wait-for-service-stability: true
       continue-on-error: true
 
-    - name: Rollback on failed deployment
-      if: failure() && steps.deploy.conclusion == 'failure'
+    - name: Rollback on Failed Deployment
+      if: steps.deploy.outcome == 'failure'
       run: |
         echo "🚨 Deployment failed! Starting rollback process..."
         
-        # Get the previous task definition revision
+        # Get the current task definition ARN from the service
         CURRENT_TASK_DEF=$(aws ecs describe-services \
           --cluster ${{ env.ECS_CLUSTER }} \
           --services ${{ env.ECS_SERVICE }} \
           --query 'services[0].taskDefinition' \
-          --output text)
-        
+          --output text 2>/dev/null) || {
+          echo "❌ Error: Failed to retrieve current task definition from service."
+          exit 1
+        }
         echo "Current task definition: $CURRENT_TASK_DEF"
         
         # Extract family and revision number
@@ -114,27 +116,88 @@ jobs:
         CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | cut -d':' -f2)
         PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
         
+        # Check if previous revision exists
         if [ $PREVIOUS_REVISION -gt 0 ]; then
           PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
-          echo "Rolling back to: $PREVIOUS_TASK_DEF"
-          # Update service to use previous task definition
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition $PREVIOUS_TASK_DEF
+          echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
           
-          # Wait for rollback to complete
-          echo "Waiting for rollback to complete..."
-          aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }}
-          
-          echo "✅ Rollback completed successfully!"
-          echo "Service is now running previous task definition: $PREVIOUS_TASK_DEF"
+          # Verify the previous task definition exists and is active
+          if aws ecs describe-task-definition \
+            --task-definition $PREVIOUS_TASK_DEF \
+            --query 'taskDefinition.status' --output text | grep -q "ACTIVE"; then
+            echo "Previous task definition $PREVIOUS_TASK_DEF is active."
+            
+            # Update service to use previous task definition
+            aws ecs update-service \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service ${{ env.ECS_SERVICE }} \
+              --task-definition $PREVIOUS_TASK_DEF \
+              --force-new-deployment || {
+              echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
+              exit 1
+            }
+            
+            # Wait for service to stabilize (with timeout)
+            echo "Waiting for rollback to stabilize (timeout 300s)..."
+            timeout 300s aws ecs wait services-stable \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services ${{ env.ECS_SERVICE }} || {
+              echo "❌ Error: Service failed to stabilize after rollback."
+              exit 1
+            }
+            
+            echo "✅ Rollback completed successfully!"
+            echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
+          else
+            echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is not active or does not exist."
+            exit 1
+          fi
         else
-          echo "❌ Cannot rollback: No previous revision available"
+          echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
           exit 1
         fi
+      
+
+    # - name: Rollback on failed deployment
+    #   if: failure() && steps.deploy.conclusion == 'failure'
+    #   run: |
+    #     echo "🚨 Deployment failed! Starting rollback process..."
+        
+    #     # Get the previous task definition revision
+    #     CURRENT_TASK_DEF=$(aws ecs describe-services \
+    #       --cluster ${{ env.ECS_CLUSTER }} \
+    #       --services ${{ env.ECS_SERVICE }} \
+    #       --query 'services[0].taskDefinition' \
+    #       --output text)
+        
+    #     echo "Current task definition: $CURRENT_TASK_DEF"
+        
+    #     # Extract family and revision number
+    #     FAMILY=$(echo $CURRENT_TASK_DEF | cut -d':' -f1)
+    #     CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | cut -d':' -f2)
+    #     PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
+        
+    #     if [ $PREVIOUS_REVISION -gt 0 ]; then
+    #       PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
+    #       echo "Rolling back to: $PREVIOUS_TASK_DEF"
+    #       # Update service to use previous task definition
+    #       aws ecs update-service \
+    #         --cluster ${{ env.ECS_CLUSTER }} \
+    #         --service ${{ env.ECS_SERVICE }} \
+    #         --task-definition $PREVIOUS_TASK_DEF
+          
+    #       # Wait for rollback to complete
+    #       echo "Waiting for rollback to complete..."
+    #       aws ecs wait services-stable \
+    #         --cluster ${{ env.ECS_CLUSTER }} \
+    #         --services ${{ env.ECS_SERVICE }}
+          
+    #       echo "✅ Rollback completed successfully!"
+    #       echo "Service is now running previous task definition: $PREVIOUS_TASK_DEF"
+    #     else
+    #       echo "❌ Cannot rollback: No previous revision available"
+    #       exit 1
+    #     fi
 
     - name: Deployment notification
       if: always()
@@ -151,29 +214,4 @@ jobs:
           exit 1
         fi
 
-    # - name: Rollback on Failed deployment
-    #   if: steps.deploy.outcome == 'failure'
-    #   run: |
-    #       echo "Deployment failed, rolling back to previous task definition"
-    #       #Get the previous task definition revision
-    #       CURRENT_TASK_DEF=$(aws ecs describe-services \
-    #         --cluster ${{ env.ECS_CLUSTER }} \
-    #         --service ${{ env.ECS_SERVICE }} \
-    #         --query 'service[0].taskDefinition' --output text)
-
-    #       echo "current task definition: $CURRENT_TASK_DEF"
-    #       aws ecs update-service \
-    #         --cluster ${{ env.ECS_CLUSTER }} \
-    #         --service ${{ env.ECS_SERVICE }} \
-    #         --task-definition $PREVIOUS_TASK_ARN \
-    #         --force-new-deployment
-    #       aws ecs wait services-stable \
-    #         --cluster ${{ env.ECS_CLUSTER }} \
-    #         --services ${{ env.ECS_SERVICE }}    
-
-    # - name: Deployment notification
-    #   run: |
-    #     echo "🚀 Successfully deployed to ${{ env.ENVIRONMENT }} environment!"
-    #     echo "Image: ${{ steps.build-image.outputs.image }}"
-    #     echo "Service: ${{ env.ECS_SERVICE }}"
-    #     echo "Cluster: ${{ env.ECS_CLUSTER }}"
+    
