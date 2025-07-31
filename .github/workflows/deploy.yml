@@ -37,7 +37,7 @@ jobs:
         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
           echo "ECS_CLUSTER=app-cluster" >> $GITHUB_ENV
-          echo "ECS_SERVICE=app-service " >> $GITHUB_ENV
+          echo "ECS_SERVICE=app-service" >> $GITHUB_ENV
           echo "TASK_DEFINITION=app-task-definition" >> $GITHUB_ENV
           echo "CONTAINER_NAME=myContainer" >> $GITHUB_ENV
         fi
@@ -62,12 +62,14 @@ jobs:
       run: |
           cd blog
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT-latest .
+
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT-latest
 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT-latest
 
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
 
     - name: Download task definition
       id: get-task-def
@@ -76,6 +78,10 @@ jobs:
           --task-definition ${{ env.TASK_DEFINITION }} \
           --query taskDefinition > task-definition.json || { echo "Task definition not found"; exit 1; }
         echo "previous_task_definition=task-definition.json" >> $GITHUB_OUTPUT
+
+    # - name: Remove repositoryCredentials from Task Definition
+    #   run: |
+    #     jq 'del(.containerDefinitions[].repositoryCredentials)' task-definition.json > temp.json && mv temp.json task-definition.json
 
     - name: Update ECS Task Definition
       id: task-def
@@ -95,151 +101,57 @@ jobs:
           wait-for-service-stability: true
       continue-on-error: true
 
-    - name: Rollback on Failed Deployment
-      id: rollback
-      if: steps.deploy.outcome == 'failure'
-      run: |
-        echo "🚨 Deployment failed! Starting rollback process..."
-        
-        # Get the current task definition ARN
-        CURRENT_TASK_DEF=$(aws ecs describe-services \
-          --cluster ${{ env.ECS_CLUSTER }} \
-          --services ${{ env.ECS_SERVICE }} \
-          --query 'services[0].taskDefinition' --output text) || {
-          echo "❌ Error: Failed to retrieve current task definition."
-          exit 1
-        }
-        echo "Current task definition: $CURRENT_TASK_DEF"
-        
-        # Extract family and revision
-        FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
-        CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
-        PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
-        
-        if [ $PREVIOUS_REVISION -gt 0 ]; then
-          PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
-          echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
-          
-          # Verify the previous task definition exists and is active
-          TASK_STATUS=$(aws ecs describe-task-definition \
-            --task-definition $PREVIOUS_TASK_DEF \
-            --query 'taskDefinition.status' --output text 2>/dev/null) || {
-            echo "❌ Error: Task definition $PREVIOUS_TASK_DEF does not exist."
-            echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-            aws ecs update-service \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --service ${{ env.ECS_SERVICE }} \
-              --task-definition $CURRENT_TASK_DEF \
-              --force-new-deployment || {
-              echo "❌ Error: Failed to redeploy current task definition."
-              exit 1
-            }
-            echo "Waiting for service to stabilize (timeout 300s)..."
-            timeout 300s aws ecs wait services-stable \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --services ${{ env.ECS_SERVICE }} || {
-              echo "❌ Error: Service failed to stabilize after redeployment."
-              exit 1
-            }
-            echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-            exit 0
-          }
-          
-          if [ "$TASK_STATUS" = "ACTIVE" ]; then
-            echo "Previous task definition $PREVIOUS_TASK_DEF is active."
-            
-            # Update service to use previous task definition
-            aws ecs update-service \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --service ${{ env.ECS_SERVICE }} \
-              --task-definition $PREVIOUS_TASK_DEF \
-              --force-new-deployment || {
-              echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
-              exit 1
-            }
-            
-            # Wait for rollback to complete
-            echo "Waiting for rollback to stabilize (timeout 300s)..."
-            timeout 300s aws ecs wait services-stable \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --services ${{ env.ECS_SERVICE }} || {
-              echo "❌ Error: Service failed to stabilize after rollback."
-              exit 1
-            }
-            
-            echo "✅ Rollback completed successfully!"
-            echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
-          else
-            echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is inactive."
-            echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-            aws ecs update-service \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --service ${{ env.ECS_SERVICE }} \
-              --task-definition $CURRENT_TASK_DEF \
-              --force-new-deployment || {
-              echo "❌ Error: Failed to redeploy current task definition."
-              exit 1
-            }
-            echo "Waiting for service to stabilize (timeout 300s)..."
-            timeout 300s aws ecs wait services-stable \
-              --cluster ${{ env.ECS_CLUSTER }} \
-              --services ${{ env.ECS_SERVICE }} || {
-              echo "❌ Error: Service failed to stabilize after redeployment."
-              exit 1
-            }
-            echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-          fi
-        else
-          echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
-          echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition $CURRENT_TASK_DEF \
-            --force-new-deployment || {
-            echo "❌ Error: Failed to redeploy current task definition."
-            exit 1
-          }
-          echo "Waiting for service to stabilize (timeout 300s)..."
-          timeout 300s aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} || {
-            echo "❌ Error: Service failed to stabilize after redeployment."
-            exit 1
-          }
-          echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-        fi
-
     # - name: Rollback on Failed Deployment
+    #   id: rollback
     #   if: steps.deploy.outcome == 'failure'
     #   run: |
     #     echo "🚨 Deployment failed! Starting rollback process..."
         
-    #     # Get the current task definition ARN from the service
+    #     # Get the current task definition ARN
     #     CURRENT_TASK_DEF=$(aws ecs describe-services \
     #       --cluster ${{ env.ECS_CLUSTER }} \
     #       --services ${{ env.ECS_SERVICE }} \
-    #       --query 'services[0].taskDefinition' \
-    #       --output text 2>/dev/null) || {
-    #       echo "❌ Error: Failed to retrieve current task definition from service."
+    #       --query 'services[0].taskDefinition' --output text) || {
+    #       echo "❌ Error: Failed to retrieve current task definition."
     #       exit 1
     #     }
     #     echo "Current task definition: $CURRENT_TASK_DEF"
-
-    #     # Extract family and revision using jq or awk to handle ARN structure
+        
+    #     # Extract family and revision
     #     FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
     #     CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
     #     PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
         
-    #     # Check if previous revision exists
     #     if [ $PREVIOUS_REVISION -gt 0 ]; then
     #       PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
     #       echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
           
     #       # Verify the previous task definition exists and is active
-    #       if aws ecs describe-task-definition \
+    #       TASK_STATUS=$(aws ecs describe-task-definition \
     #         --task-definition $PREVIOUS_TASK_DEF \
-    #         --query 'taskDefinition.status' --output text | grep -q "ACTIVE"; then
+    #         --query 'taskDefinition.status' --output text 2>/dev/null) || {
+    #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF does not exist."
+    #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+    #         aws ecs update-service \
+    #           --cluster ${{ env.ECS_CLUSTER }} \
+    #           --service ${{ env.ECS_SERVICE }} \
+    #           --task-definition $CURRENT_TASK_DEF \
+    #           --force-new-deployment || {
+    #           echo "❌ Error: Failed to redeploy current task definition."
+    #           exit 1
+    #         }
+    #         echo "Waiting for service to stabilize (timeout 300s)..."
+    #         timeout 300s aws ecs wait services-stable \
+    #           --cluster ${{ env.ECS_CLUSTER }} \
+    #           --services ${{ env.ECS_SERVICE }} || {
+    #           echo "❌ Error: Service failed to stabilize after redeployment."
+    #           exit 1
+    #         }
+    #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
+    #         exit 0
+    #       }
+          
+    #       if [ "$TASK_STATUS" = "ACTIVE" ]; then
     #         echo "Previous task definition $PREVIOUS_TASK_DEF is active."
             
     #         # Update service to use previous task definition
@@ -252,7 +164,7 @@ jobs:
     #           exit 1
     #         }
             
-    #         # Wait for service to stabilize (with timeout)
+    #         # Wait for rollback to complete
     #         echo "Waiting for rollback to stabilize (timeout 300s)..."
     #         timeout 300s aws ecs wait services-stable \
     #           --cluster ${{ env.ECS_CLUSTER }} \
@@ -264,13 +176,107 @@ jobs:
     #         echo "✅ Rollback completed successfully!"
     #         echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
     #       else
-    #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is not active or does not exist."
-    #         exit 1
+    #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is inactive."
+    #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+    #         aws ecs update-service \
+    #           --cluster ${{ env.ECS_CLUSTER }} \
+    #           --service ${{ env.ECS_SERVICE }} \
+    #           --task-definition $CURRENT_TASK_DEF \
+    #           --force-new-deployment || {
+    #           echo "❌ Error: Failed to redeploy current task definition."
+    #           exit 1
+    #         }
+    #         echo "Waiting for service to stabilize (timeout 300s)..."
+    #         timeout 300s aws ecs wait services-stable \
+    #           --cluster ${{ env.ECS_CLUSTER }} \
+    #           --services ${{ env.ECS_SERVICE }} || {
+    #           echo "❌ Error: Service failed to stabilize after redeployment."
+    #           exit 1
+    #         }
+    #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
     #       fi
     #     else
     #       echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
-    #       exit 1
+    #       echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+    #       aws ecs update-service \
+    #         --cluster ${{ env.ECS_CLUSTER }} \
+    #         --service ${{ env.ECS_SERVICE }} \
+    #         --task-definition $CURRENT_TASK_DEF \
+    #         --force-new-deployment || {
+    #         echo "❌ Error: Failed to redeploy current task definition."
+    #         exit 1
+    #       }
+    #       echo "Waiting for service to stabilize (timeout 300s)..."
+    #       timeout 300s aws ecs wait services-stable \
+    #         --cluster ${{ env.ECS_CLUSTER }} \
+    #         --services ${{ env.ECS_SERVICE }} || {
+    #         echo "❌ Error: Service failed to stabilize after redeployment."
+    #         exit 1
+    #       }
+    #       echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
     #     fi
+
+    - name: Rollback on Failed Deployment
+      if: steps.deploy.outcome == 'failure'
+      run: |
+        echo "🚨 Deployment failed! Starting rollback process..."
+        
+        # Get the current task definition ARN from the service
+        CURRENT_TASK_DEF=$(aws ecs describe-services \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --services ${{ env.ECS_SERVICE }} \
+          --query 'services[0].taskDefinition' \
+          --output text 2>/dev/null) || {
+          echo "❌ Error: Failed to retrieve current task definition from service."
+          exit 1
+        }
+        echo "Current task definition: $CURRENT_TASK_DEF"
+
+        # Extract family and revision using jq or awk to handle ARN structure
+        FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
+        CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
+        PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
+        
+        # Check if previous revision exists
+        if [ $PREVIOUS_REVISION -gt 0 ]; then
+          PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
+          echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
+          
+          # Verify the previous task definition exists and is active
+          if aws ecs describe-task-definition \
+            --task-definition $PREVIOUS_TASK_DEF \
+            --query 'taskDefinition.status' --output text | grep -q "ACTIVE"; then
+            echo "Previous task definition $PREVIOUS_TASK_DEF is active."
+            
+            # Update service to use previous task definition
+            aws ecs update-service \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service ${{ env.ECS_SERVICE }} \
+              --task-definition $PREVIOUS_TASK_DEF \
+              --force-new-deployment || {
+              echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
+              exit 1
+            }
+            
+            # Wait for service to stabilize (with timeout)
+            echo "Waiting for rollback to stabilize (timeout 300s)..."
+            timeout 300s aws ecs wait services-stable \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services ${{ env.ECS_SERVICE }} || {
+              echo "❌ Error: Service failed to stabilize after rollback."
+              exit 1
+            }
+            
+            echo "✅ Rollback completed successfully!"
+            echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
+          else
+            echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is not active or does not exist."
+            exit 1
+          fi
+        else
+          echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
+          exit 1
+        fi
       
 
     - name: Deployment notification
