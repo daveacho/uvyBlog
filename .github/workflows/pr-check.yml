@@ -1,3 +1,48 @@
+# name: PR Checks
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#       - staging
+#   workflow_dispatch:
+
+# env:
+#   AWS_REGION: eu-west-2
+#   ECR_REPOSITORY: ecs-test
+#   AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+# jobs:
+#   validate:
+#     name: Validate Docker Build
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSession
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build Docker Image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           cd blog
+##           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
 name: PR Checks
 
 on:
@@ -6,11 +51,6 @@ on:
       - main
       - staging
   workflow_dispatch:
-
-env:
-  AWS_REGION: eu-west-2
-  ECR_REPOSITORY: ecs-test
-  AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
 
 permissions:
   id-token: write
@@ -27,8 +67,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
           role-session-name: GithubActionSession
 
       - name: Login to Amazon ECR
@@ -38,6 +78,7 @@ jobs:
       - name: Build Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd blog

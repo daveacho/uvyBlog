@@ -1,3 +1,299 @@
+# name: Deploy to AWS ECS
+
+# on:
+#   push:
+#     branches:
+#       - main        # Deploy to production
+#       - staging     # Deploy to staging
+#   workflow_dispatch:  # Allow manual triggers
+
+# env:
+#   AWS_REGION: eu-west-2
+#   ECR_REPOSITORY: ecs-test
+#   AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+
+# jobs:
+#   deploy:
+#     name: Deploy to ECS
+#     runs-on: ubuntu-latest
+    
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v4
+
+#     - name: Set environment variables
+#       run: |
+#         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+#           echo "ENVIRONMENT=production" >> $GITHUB_ENV
+#           echo "ECS_CLUSTER=uvyblog-dev-cluster" >> $GITHUB_ENV
+#           echo "ECS_SERVICE=uvyblog-dev-svc" >> $GITHUB_ENV
+#           echo "TASK_DEFINITION=uvyblog-dev-td" >> $GITHUB_ENV
+#           echo "CONTAINER_NAME=django_app" >> $GITHUB_ENV
+#         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+#           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+#           echo "ECS_CLUSTER=app-cluster" >> $GITHUB_ENV
+#           echo "ECS_SERVICE=app-service" >> $GITHUB_ENV
+#           echo "TASK_DEFINITION=app-task-definition" >> $GITHUB_ENV
+#           echo "CONTAINER_NAME=myContainer" >> $GITHUB_ENV
+#         fi
+
+#     - name: Configure AWS Credentials
+#       uses: aws-actions/configure-aws-credentials@v4
+#       with:
+#           role-to-assume: ${{ env.AWS_ROLE_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+#           role-session-name: GithubActionSession
+
+#     - name: Login to Amazon ECR
+#       id: login-ecr
+#       uses: aws-actions/amazon-ecr-login@v2
+        
+
+#     - name: Build, Tag, and Push Image to Amazon ECR
+#       id: build-image
+#       env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           IMAGE_TAG: ${{ github.sha }}
+#       run: |
+#           cd blog
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+#           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT-latest
+
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT-latest
+
+#           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+
+#     - name: Download task definition
+#       id: get-task-def
+#       run: |
+#         aws ecs describe-task-definition \
+#           --task-definition ${{ env.TASK_DEFINITION }} \
+#           --query taskDefinition > task-definition.json || { echo "Task definition not found"; exit 1; }
+#         echo "previous_task_definition=task-definition.json" >> $GITHUB_OUTPUT
+
+#     # - name: Remove repositoryCredentials from Task Definition
+#     #   run: |
+#     #     jq 'del(.containerDefinitions[].repositoryCredentials)' task-definition.json > temp.json && mv temp.json task-definition.json
+
+#     - name: Update ECS Task Definition
+#       id: task-def
+#       uses: aws-actions/amazon-ecs-render-task-definition@v1
+#       with:
+#           task-definition: task-definition.json
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}      
+
+#     - name: Deploy Amazon ECS Task Definition
+#       id: deploy
+#       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#       with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
+#       continue-on-error: true
+
+#     # - name: Rollback on Failed Deployment
+#     #   id: rollback
+#     #   if: steps.deploy.outcome == 'failure'
+#     #   run: |
+#     #     echo "🚨 Deployment failed! Starting rollback process..."
+        
+#     #     # Get the current task definition ARN
+#     #     CURRENT_TASK_DEF=$(aws ecs describe-services \
+#     #       --cluster ${{ env.ECS_CLUSTER }} \
+#     #       --services ${{ env.ECS_SERVICE }} \
+#     #       --query 'services[0].taskDefinition' --output text) || {
+#     #       echo "❌ Error: Failed to retrieve current task definition."
+#     #       exit 1
+#     #     }
+#     #     echo "Current task definition: $CURRENT_TASK_DEF"
+        
+#     #     # Extract family and revision
+#     #     FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
+#     #     CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
+#     #     PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
+        
+#     #     if [ $PREVIOUS_REVISION -gt 0 ]; then
+#     #       PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
+#     #       echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
+          
+#     #       # Verify the previous task definition exists and is active
+#     #       TASK_STATUS=$(aws ecs describe-task-definition \
+#     #         --task-definition $PREVIOUS_TASK_DEF \
+#     #         --query 'taskDefinition.status' --output text 2>/dev/null) || {
+#     #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF does not exist."
+#     #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+#     #         aws ecs update-service \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --service ${{ env.ECS_SERVICE }} \
+#     #           --task-definition $CURRENT_TASK_DEF \
+#     #           --force-new-deployment || {
+#     #           echo "❌ Error: Failed to redeploy current task definition."
+#     #           exit 1
+#     #         }
+#     #         echo "Waiting for service to stabilize (timeout 300s)..."
+#     #         timeout 300s aws ecs wait services-stable \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --services ${{ env.ECS_SERVICE }} || {
+#     #           echo "❌ Error: Service failed to stabilize after redeployment."
+#     #           exit 1
+#     #         }
+#     #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
+#     #         exit 0
+#     #       }
+          
+#     #       if [ "$TASK_STATUS" = "ACTIVE" ]; then
+#     #         echo "Previous task definition $PREVIOUS_TASK_DEF is active."
+            
+#     #         # Update service to use previous task definition
+#     #         aws ecs update-service \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --service ${{ env.ECS_SERVICE }} \
+#     #           --task-definition $PREVIOUS_TASK_DEF \
+#     #           --force-new-deployment || {
+#     #           echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
+#     #           exit 1
+#     #         }
+            
+#     #         # Wait for rollback to complete
+#     #         echo "Waiting for rollback to stabilize (timeout 300s)..."
+#     #         timeout 300s aws ecs wait services-stable \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --services ${{ env.ECS_SERVICE }} || {
+#     #           echo "❌ Error: Service failed to stabilize after rollback."
+#     #           exit 1
+#     #         }
+            
+#     #         echo "✅ Rollback completed successfully!"
+#     #         echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
+#     #       else
+#     #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is inactive."
+#     #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+#     #         aws ecs update-service \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --service ${{ env.ECS_SERVICE }} \
+#     #           --task-definition $CURRENT_TASK_DEF \
+#     #           --force-new-deployment || {
+#     #           echo "❌ Error: Failed to redeploy current task definition."
+#     #           exit 1
+#     #         }
+#     #         echo "Waiting for service to stabilize (timeout 300s)..."
+#     #         timeout 300s aws ecs wait services-stable \
+#     #           --cluster ${{ env.ECS_CLUSTER }} \
+#     #           --services ${{ env.ECS_SERVICE }} || {
+#     #           echo "❌ Error: Service failed to stabilize after redeployment."
+#     #           exit 1
+#     #         }
+#     #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
+#     #       fi
+#     #     else
+#     #       echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
+#     #       echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
+#     #       aws ecs update-service \
+#     #         --cluster ${{ env.ECS_CLUSTER }} \
+#     #         --service ${{ env.ECS_SERVICE }} \
+#     #         --task-definition $CURRENT_TASK_DEF \
+#     #         --force-new-deployment || {
+#     #         echo "❌ Error: Failed to redeploy current task definition."
+#     #         exit 1
+#     #       }
+#     #       echo "Waiting for service to stabilize (timeout 300s)..."
+#     #       timeout 300s aws ecs wait services-stable \
+#     #         --cluster ${{ env.ECS_CLUSTER }} \
+#     #         --services ${{ env.ECS_SERVICE }} || {
+#     #         echo "❌ Error: Service failed to stabilize after redeployment."
+#     #         exit 1
+#     #       }
+#     #       echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
+#     #     fi
+
+#     - name: Rollback on Failed Deployment
+#       if: steps.deploy.outcome == 'failure'
+#       run: |
+#         echo "🚨 Deployment failed! Starting rollback process..."
+        
+#         # Get the current task definition ARN from the service
+#         CURRENT_TASK_DEF=$(aws ecs describe-services \
+#           --cluster ${{ env.ECS_CLUSTER }} \
+#           --services ${{ env.ECS_SERVICE }} \
+#           --query 'services[0].taskDefinition' \
+#           --output text 2>/dev/null) || {
+#           echo "❌ Error: Failed to retrieve current task definition from service."
+#           exit 1
+#         }
+#         echo "Current task definition: $CURRENT_TASK_DEF"
+
+#         # Extract family and revision using jq or awk to handle ARN structure
+#         FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
+#         CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
+#         PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
+        
+#         # Check if previous revision exists
+#         if [ $PREVIOUS_REVISION -gt 0 ]; then
+#           PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
+#           echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
+          
+#           # Verify the previous task definition exists and is active
+#           if aws ecs describe-task-definition \
+#             --task-definition $PREVIOUS_TASK_DEF \
+#             --query 'taskDefinition.status' --output text | grep -q "ACTIVE"; then
+#             echo "Previous task definition $PREVIOUS_TASK_DEF is active."
+            
+#             # Update service to use previous task definition
+#             aws ecs update-service \
+#               --cluster ${{ env.ECS_CLUSTER }} \
+#               --service ${{ env.ECS_SERVICE }} \
+#               --task-definition $PREVIOUS_TASK_DEF \
+#               --force-new-deployment || {
+#               echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
+#               exit 1
+#             }
+            
+#             # Wait for service to stabilize (with timeout)
+#             echo "Waiting for rollback to stabilize (timeout 300s)..."
+#             timeout 300s aws ecs wait services-stable \
+#               --cluster ${{ env.ECS_CLUSTER }} \
+#               --services ${{ env.ECS_SERVICE }} || {
+#               echo "❌ Error: Service failed to stabilize after rollback."
+#               exit 1
+#             }
+            
+#             echo "✅ Rollback completed successfully!"
+#             echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
+#           else
+#             echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is not active or does not exist."
+#             exit 1
+#           fi
+#         else
+#           echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
+#           exit 1
+#         fi
+      
+
+#     - name: Deployment notification
+#       if: always()
+#       run: |
+#         if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+#           echo "🚀 Successfully deployed to ${{ env.ENVIRONMENT }} environment!"
+#           echo "Image: ${{ steps.build-image.outputs.image }}"
+#           echo "Service: ${{ env.ECS_SERVICE }}"
+#           echo "Cluster: ${{ env.ECS_CLUSTER }}"
+#         elif [ "${{ steps.deploy.outcome }}" = "failure" ]; then
+#           echo "❌ Deployment to ${{ env.ENVIRONMENT }} failed!"
+#           echo "Rollback process was initiated."
+#           echo "Please check the logs and investigate the issue."
+#           exit 1
+##         fi
+
 name: Deploy to AWS ECS
 
 on:
@@ -6,11 +302,6 @@ on:
       - main        # Deploy to production
       - staging     # Deploy to staging
   workflow_dispatch:  # Allow manual triggers
-
-env:
-  AWS_REGION: eu-west-2
-  ECR_REPOSITORY: ecs-test
-  AWS_ROLE_ARN: arn:aws:iam::385771716406:role/test-github-actions-oidc-role
 
 permissions:
   id-token: write
@@ -29,24 +320,24 @@ jobs:
     - name: Set environment variables
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          echo "ENVIRONMENT=production" >> $GITHUB_ENV
-          echo "ECS_CLUSTER=uvyblog-dev-cluster" >> $GITHUB_ENV
-          echo "ECS_SERVICE=uvyblog-dev-svc" >> $GITHUB_ENV
-          echo "TASK_DEFINITION=uvyblog-dev-td" >> $GITHUB_ENV
-          echo "CONTAINER_NAME=django_app" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ vars.PRODUCTION_ENVIRONMENT }}" >> $GITHUB_ENV
+          echo "ECS_CLUSTER=${{ vars.PRODUCTION_ECS_CLUSTER }}" >> $GITHUB_ENV
+          echo "ECS_SERVICE=${{ vars.PRODUCTION_ECS_SERVICE }}" >> $GITHUB_ENV
+          echo "TASK_DEFINITION=${{ vars.PRODUCTION_TASK_DEFINITION }}" >> $GITHUB_ENV
+          echo "CONTAINER_NAME=${{ vars.PRODUCTION_CONTAINER_NAME }}" >> $GITHUB_ENV
         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-          echo "ECS_CLUSTER=app-cluster" >> $GITHUB_ENV
-          echo "ECS_SERVICE=app-service" >> $GITHUB_ENV
-          echo "TASK_DEFINITION=app-task-definition" >> $GITHUB_ENV
-          echo "CONTAINER_NAME=myContainer" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ vars.STAGING_ENVIRONMENT }}" >> $GITHUB_ENV
+          echo "ECS_CLUSTER=${{ vars.STAGING_ECS_CLUSTER }}" >> $GITHUB_ENV
+          echo "ECS_SERVICE=${{ vars.STAGING_ECS_SERVICE }}" >> $GITHUB_ENV
+          echo "TASK_DEFINITION=${{ vars.STAGING_TASK_DEFINITION }}" >> $GITHUB_ENV
+          echo "CONTAINER_NAME=${{ vars.STAGING_CONTAINER_NAME }}" >> $GITHUB_ENV
         fi
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
           role-session-name: GithubActionSession
 
     - name: Login to Amazon ECR
@@ -58,6 +349,7 @@ jobs:
       id: build-image
       env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
       run: |
           cd blog
@@ -79,10 +371,6 @@ jobs:
           --query taskDefinition > task-definition.json || { echo "Task definition not found"; exit 1; }
         echo "previous_task_definition=task-definition.json" >> $GITHUB_OUTPUT
 
-    # - name: Remove repositoryCredentials from Task Definition
-    #   run: |
-    #     jq 'del(.containerDefinitions[].repositoryCredentials)' task-definition.json > temp.json && mv temp.json task-definition.json
-
     - name: Update ECS Task Definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -99,122 +387,6 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-      continue-on-error: true
-
-    # - name: Rollback on Failed Deployment
-    #   id: rollback
-    #   if: steps.deploy.outcome == 'failure'
-    #   run: |
-    #     echo "🚨 Deployment failed! Starting rollback process..."
-        
-    #     # Get the current task definition ARN
-    #     CURRENT_TASK_DEF=$(aws ecs describe-services \
-    #       --cluster ${{ env.ECS_CLUSTER }} \
-    #       --services ${{ env.ECS_SERVICE }} \
-    #       --query 'services[0].taskDefinition' --output text) || {
-    #       echo "❌ Error: Failed to retrieve current task definition."
-    #       exit 1
-    #     }
-    #     echo "Current task definition: $CURRENT_TASK_DEF"
-        
-    #     # Extract family and revision
-    #     FAMILY=$(echo $CURRENT_TASK_DEF | awk -F'/' '{print $2}' | cut -d':' -f1)
-    #     CURRENT_REVISION=$(echo $CURRENT_TASK_DEF | awk -F':' '{print $NF}')
-    #     PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
-        
-    #     if [ $PREVIOUS_REVISION -gt 0 ]; then
-    #       PREVIOUS_TASK_DEF="${FAMILY}:${PREVIOUS_REVISION}"
-    #       echo "Attempting rollback to: $PREVIOUS_TASK_DEF"
-          
-    #       # Verify the previous task definition exists and is active
-    #       TASK_STATUS=$(aws ecs describe-task-definition \
-    #         --task-definition $PREVIOUS_TASK_DEF \
-    #         --query 'taskDefinition.status' --output text 2>/dev/null) || {
-    #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF does not exist."
-    #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-    #         aws ecs update-service \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --service ${{ env.ECS_SERVICE }} \
-    #           --task-definition $CURRENT_TASK_DEF \
-    #           --force-new-deployment || {
-    #           echo "❌ Error: Failed to redeploy current task definition."
-    #           exit 1
-    #         }
-    #         echo "Waiting for service to stabilize (timeout 300s)..."
-    #         timeout 300s aws ecs wait services-stable \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --services ${{ env.ECS_SERVICE }} || {
-    #           echo "❌ Error: Service failed to stabilize after redeployment."
-    #           exit 1
-    #         }
-    #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-    #         exit 0
-    #       }
-          
-    #       if [ "$TASK_STATUS" = "ACTIVE" ]; then
-    #         echo "Previous task definition $PREVIOUS_TASK_DEF is active."
-            
-    #         # Update service to use previous task definition
-    #         aws ecs update-service \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --service ${{ env.ECS_SERVICE }} \
-    #           --task-definition $PREVIOUS_TASK_DEF \
-    #           --force-new-deployment || {
-    #           echo "❌ Error: Failed to update service with task definition $PREVIOUS_TASK_DEF."
-    #           exit 1
-    #         }
-            
-    #         # Wait for rollback to complete
-    #         echo "Waiting for rollback to stabilize (timeout 300s)..."
-    #         timeout 300s aws ecs wait services-stable \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --services ${{ env.ECS_SERVICE }} || {
-    #           echo "❌ Error: Service failed to stabilize after rollback."
-    #           exit 1
-    #         }
-            
-    #         echo "✅ Rollback completed successfully!"
-    #         echo "Service is now running task definition: $PREVIOUS_TASK_DEF"
-    #       else
-    #         echo "❌ Error: Task definition $PREVIOUS_TASK_DEF is inactive."
-    #         echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-    #         aws ecs update-service \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --service ${{ env.ECS_SERVICE }} \
-    #           --task-definition $CURRENT_TASK_DEF \
-    #           --force-new-deployment || {
-    #           echo "❌ Error: Failed to redeploy current task definition."
-    #           exit 1
-    #         }
-    #         echo "Waiting for service to stabilize (timeout 300s)..."
-    #         timeout 300s aws ecs wait services-stable \
-    #           --cluster ${{ env.ECS_CLUSTER }} \
-    #           --services ${{ env.ECS_SERVICE }} || {
-    #           echo "❌ Error: Service failed to stabilize after redeployment."
-    #           exit 1
-    #         }
-    #         echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-    #       fi
-    #     else
-    #       echo "❌ Error: No previous revision available for rollback (current revision: $CURRENT_REVISION)."
-    #       echo "Forcing redeployment of current task definition: $CURRENT_TASK_DEF"
-    #       aws ecs update-service \
-    #         --cluster ${{ env.ECS_CLUSTER }} \
-    #         --service ${{ env.ECS_SERVICE }} \
-    #         --task-definition $CURRENT_TASK_DEF \
-    #         --force-new-deployment || {
-    #         echo "❌ Error: Failed to redeploy current task definition."
-    #         exit 1
-    #       }
-    #       echo "Waiting for service to stabilize (timeout 300s)..."
-    #       timeout 300s aws ecs wait services-stable \
-    #         --cluster ${{ env.ECS_CLUSTER }} \
-    #         --services ${{ env.ECS_SERVICE }} || {
-    #         echo "❌ Error: Service failed to stabilize after redeployment."
-    #         exit 1
-    #       }
-    #       echo "✅ Redeployed current task definition: $CURRENT_TASK_DEF"
-    #     fi
 
     - name: Rollback on Failed Deployment
       if: steps.deploy.outcome == 'failure'
@@ -283,12 +455,12 @@ jobs:
       if: always()
       run: |
         if [ "${{ steps.deploy.outcome }}" = "success" ]; then
-          echo "🚀 Successfully deployed to ${{ env.ENVIRONMENT }} environment!"
+          echo "Successfully deployed to ${{ env.ENVIRONMENT }} environment!"
           echo "Image: ${{ steps.build-image.outputs.image }}"
           echo "Service: ${{ env.ECS_SERVICE }}"
           echo "Cluster: ${{ env.ECS_CLUSTER }}"
         elif [ "${{ steps.deploy.outcome }}" = "failure" ]; then
-          echo "❌ Deployment to ${{ env.ENVIRONMENT }} failed!"
+          echo "Deployment to ${{ env.ENVIRONMENT }} failed!"
           echo "Rollback process was initiated."
           echo "Please check the logs and investigate the issue."
           exit 1
