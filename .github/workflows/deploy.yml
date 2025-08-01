@@ -371,6 +371,10 @@ jobs:
           --query taskDefinition > task-definition.json || { echo "Task definition not found"; exit 1; }
         echo "previous_task_definition=task-definition.json" >> $GITHUB_OUTPUT
 
+    # - name: Remove repositoryCredentials from Task Definition
+    #   run: |
+    #        jq 'del(.containerDefinitions[].repositoryCredentials)' task-definition.json > temp.json && mv temp.json task-definition.json
+
     - name: Update ECS Task Definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -389,7 +393,7 @@ jobs:
           wait-for-service-stability: true
 
     - name: Rollback on Failed Deployment
-      if: steps.deploy.outcome == 'failure'
+      if: steps.deploy.conclusion == 'failure'
       run: |
         echo "🚨 Deployment failed! Starting rollback process..."
         
