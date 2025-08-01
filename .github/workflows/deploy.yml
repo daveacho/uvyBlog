@@ -292,7 +292,7 @@
 #           echo "Rollback process was initiated."
 #           echo "Please check the logs and investigate the issue."
 #           exit 1
-#         fi
+##         fi
 
 name: Deploy to AWS ECS
 
