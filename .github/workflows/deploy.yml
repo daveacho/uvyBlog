@@ -381,7 +381,7 @@ jobs:
       with:
           task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}      
+          image: ${{ steps.build-image.outputs.image }}     
 
     - name: Deploy Amazon ECS Task Definition
       id: deploy
@@ -391,6 +391,7 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+          wait-for-service-stability-timeout: 120
 
     - name: Rollback on Failed Deployment
       if: steps.deploy.conclusion == 'failure'
