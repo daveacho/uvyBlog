@@ -312,7 +312,6 @@ jobs:
   deploy:
     name: Deploy to ECS
     runs-on: ubuntu-latest
-    timeout-minutes: 2  # Fail job after 2 minutes
     
     steps:
     - name: Checkout code
@@ -392,9 +391,10 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+      timeout-minutes: 2
 
     - name: Rollback on Failed Deployment
-      if: steps.deploy.conclusion == 'failure'
+      if: steps.deploy.outcome == 'failure'
       run: |
         echo "🚨 Deployment failed! Starting rollback process..."
         
