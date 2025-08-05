@@ -384,15 +384,6 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
-    {{ ... }}
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition.json
-        container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
-
     # TEMPORARY: Set impossible resources for rollback testing (remove after testing)
     - name: Set impossible resource requirements for testing
       if: contains(github.event.head_commit.message, '[test-impossible-resources]')
