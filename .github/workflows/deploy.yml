@@ -382,7 +382,35 @@ jobs:
       with:
           task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}-invalid     
+          image: ${{ steps.build-image.outputs.image }}
+
+    {{ ... }}
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    # TEMPORARY: Set impossible resources for rollback testing (remove after testing)
+    - name: Set impossible resource requirements for testing
+      if: contains(github.event.head_commit.message, '[test-impossible-resources]')
+      run: |
+        echo "🧪 Setting impossible resource requirements for rollback testing..."
+        
+        # Backup original task definition
+        cp ${{ steps.task-def.outputs.task-definition }} task-definition-backup.json
+        
+        # Modify task definition with impossible resources using jq
+        jq '.containerDefinitions[0].memory = 999999 | .containerDefinitions[0].cpu = 999999' \
+          ${{ steps.task-def.outputs.task-definition }} > task-definition-impossible.json
+        
+        # Replace the task definition file
+        mv task-definition-impossible.json ${{ steps.task-def.outputs.task-definition }}
+        
+        echo "Modified task definition with impossible resources:"
+        echo "Memory: 999999 MB, CPU: 999999 units"    
 
     - name: Deploy Amazon ECS Task Definition
       id: deploy
