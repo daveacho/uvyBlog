@@ -392,7 +392,7 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-    #  timeout-minutes: 2
+    ##  timeout-minutes: 2
 
     - name: Rollback on Failed Deployment
   #    if: steps.deploy.outcome == 'failure'
